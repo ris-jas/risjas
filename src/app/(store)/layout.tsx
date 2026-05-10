@@ -12,7 +12,7 @@ export default async function StoreLayout({ children }: { children: React.ReactN
   return (
     <>
       <Header categories={categories} />
-      <main className="min-h-[75vh] pb-6 pt-0 md:pb-0">{children}</main>
+      <main className="min-h-[75vh] pb-6 pt-[80px] lg:pt-[140px]">{children}</main>
       <Footer categories={categories} />
       <WhatsAppButton />
       <MobileNav />

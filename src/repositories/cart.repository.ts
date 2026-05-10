@@ -1,19 +1,38 @@
-﻿import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/prisma";
 
 export const cartRepository = {
   async getOrCreateCart(sessionId: string, userId?: string) {
-    let cart = await prisma.cart.findUnique({
-      where: { sessionId },
-      include: {
-        items: {
-          include: {
-            product: {
-              include: { images: true }
+    let cart = null;
+
+    if (userId) {
+      cart = await prisma.cart.findUnique({
+        where: { userId },
+        include: {
+          items: {
+            include: {
+              product: {
+                include: { images: true }
+              }
             }
           }
         }
-      }
-    });
+      });
+    }
+
+    if (!cart) {
+      cart = await prisma.cart.findUnique({
+        where: { sessionId },
+        include: {
+          items: {
+            include: {
+              product: {
+                include: { images: true }
+              }
+            }
+          }
+        }
+      });
+    }
 
     if (!cart) {
       cart = await prisma.cart.create({
@@ -21,6 +40,21 @@ export const cartRepository = {
           sessionId,
           userId
         },
+        include: {
+          items: {
+            include: {
+              product: {
+                include: { images: true }
+              }
+            }
+          }
+        }
+      });
+    } else if (userId && !cart.userId) {
+      // Link guest cart to user if they just logged in
+      cart = await prisma.cart.update({
+        where: { id: cart.id },
+        data: { userId },
         include: {
           items: {
             include: {

@@ -82,7 +82,7 @@ export default async function HomePage() {
   const freshDrops = latestProducts.slice(0, 8);
 
   return (
-    <div className="bg-[#FCFCFC] pb-16 pt-[80px] lg:pt-[128px]">
+    <div className="bg-[#FCFCFC] pb-16">
       <HeroCarousel slides={heroSlides} />
 
       <section className="container-page pt-16">

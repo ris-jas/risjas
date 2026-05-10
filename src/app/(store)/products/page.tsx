@@ -1,4 +1,4 @@
-﻿import type { Metadata } from "next";
+import type { Metadata } from "next";
 
 import EmptyState from "@/components/common/EmptyState";
 import Reveal from "@/components/common/Reveal";
@@ -26,7 +26,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Rec
   const selectedSort = typeof searchParams.sort === "string" ? searchParams.sort : "newest";
 
   return (
-    <div className="container-page section-space pt-10">
+    <div className="container-page section-space">
       <div className="grid gap-6 lg:grid-cols-[300px_1fr]">
         <Reveal>
           <ProductFilters categories={categories} />

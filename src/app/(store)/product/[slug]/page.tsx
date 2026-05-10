@@ -1,4 +1,4 @@
-﻿import type { Metadata } from "next";
+import type { Metadata } from "next";
 import { Gauge, ShieldCheck, Sparkles, Truck } from "lucide-react";
 
 import Reveal from "@/components/common/Reveal";
@@ -20,7 +20,7 @@ export default async function ProductDetailPage({ params }: { params: { slug: st
   const highlights = Array.isArray(product.highlights) ? (product.highlights as string[]) : [];
 
   return (
-    <div className="container-page section-space space-y-16 pt-10">
+    <div className="container-page section-space space-y-16">
       <div className="grid gap-8 lg:grid-cols-[1.15fr_0.85fr]">
         <Reveal>
           <ProductGallery images={product.images} name={product.name} />
