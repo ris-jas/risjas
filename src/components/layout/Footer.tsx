@@ -31,9 +31,9 @@ const footerGroups = [
 
 export default function Footer({ categories = [] }: { categories?: FooterCategory[] }) {
   return (
-    <div className="px-4 sm:px-6 lg:px-8 pb-8 mt-16">
-      <footer className="bg-navy rounded-3xl overflow-hidden shadow-premium relative">
-        <div className="max-w-7xl mx-auto px-8 sm:px-12 pt-10 pb-6">
+    <div className="px-0 sm:px-6 lg:px-8 pb-8 mt-16">
+      <footer className="bg-navy sm:rounded-3xl overflow-hidden shadow-premium relative">
+        <div className="max-w-7xl mx-auto px-6 sm:px-12 pt-10 pb-6">
           <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4 items-start">
             <div className="space-y-5">
               <Link href="/" className="inline-block group relative z-10">

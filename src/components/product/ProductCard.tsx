@@ -1,4 +1,4 @@
-﻿import Image from "next/image";
+import Image from "next/image";
 import Link from "next/link";
 
 import ProductActions from "@/components/product/ProductActions";
@@ -22,11 +22,11 @@ export default function ProductCard({ product }: { product: any }) {
         </div>
       </Link>
 
-      <div className="space-y-2 px-2 pb-3 pt-5">
-        <Link href={`/product/${product.slug}`} className="line-clamp-2 text-lg leading-snug text-navy transition-colors hover:text-rose-foreground">
+      <div className="space-y-2 px-2 pb-3 pt-4 sm:pt-5">
+        <Link href={`/product/${product.slug}`} className="line-clamp-2 text-sm sm:text-lg leading-snug text-navy transition-colors hover:text-rose-foreground font-medium sm:font-normal">
           {product.name}
         </Link>
-        <p className="text-xl font-semibold text-navy">Rs. {price.toFixed(0)}</p>
+        <p className="text-base sm:text-xl font-bold text-navy">Rs. {price.toFixed(0)}</p>
       </div>
     </article>
   );

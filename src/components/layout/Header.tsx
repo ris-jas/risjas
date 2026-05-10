@@ -78,14 +78,14 @@ export default function Header({ categories = [] }: { categories?: HeaderCategor
         {/* Logo */}
         <Link href="/" className="flex items-center flex-shrink-0 group">
           <div className={`relative transition-all duration-500 ${
-            isScrolled ? "h-12 w-[140px]" : "h-16 w-[180px] sm:h-20 sm:w-[220px]"
+            isScrolled ? "h-10 w-[120px]" : "h-12 w-[140px] sm:h-20 sm:w-[220px]"
           }`}>
             <Image 
               src="/imgs/Logo-Clean.png" 
               alt="RISJAS Logo" 
               fill 
-              sizes="200px"
-              className="object-contain scale-[1.35] group-hover:scale-[1.45] transition-transform duration-500" 
+              sizes="(max-width: 640px) 140px, 220px"
+              className="object-contain scale-[1.25] group-hover:scale-[1.35] transition-transform duration-500" 
               priority 
             />
           </div>

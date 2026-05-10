@@ -139,7 +139,7 @@ export default async function HomePage() {
         </div>
 
         {trendingProducts.length ? (
-          <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+          <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
             {trendingProducts.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
@@ -161,7 +161,7 @@ export default async function HomePage() {
             <Link href="/products?sort=newest" className="text-sm font-semibold text-navy hover:text-red transition">See Newest</Link>
           </div>
 
-          <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {freshDrops.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}

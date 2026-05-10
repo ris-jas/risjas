@@ -1,4 +1,4 @@
-﻿import { OrderStatus, PaymentMethod, PaymentStatus } from "@prisma/client";
+import { OrderStatus, PaymentMethod, PaymentStatus } from "@prisma/client";
 
 import { cartService } from "@/services/cart.service";
 import { couponService } from "@/services/coupon.service";
@@ -39,7 +39,7 @@ export const orderService = {
       city: payload.city,
       state: payload.state,
       pincode: payload.pincode,
-      status: payload.paymentMethod === PaymentMethod.COD ? OrderStatus.PENDING : OrderStatus.PENDING,
+      status: OrderStatus.PENDING,
       paymentMethod: payload.paymentMethod,
       paymentStatus: PaymentStatus.PENDING,
       subtotal: cart.summary.subtotal,
@@ -53,7 +53,7 @@ export const orderService = {
           productId: item.productId,
           productName: item.product.name,
           productSku: item.product.sku,
-          price: item.product.price,
+          price: Number(item.product.price),
           quantity: item.quantity,
           total: Number(item.product.price) * item.quantity
         }))

@@ -86,12 +86,12 @@ export default function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
                     <p className="text-[10px] sm:text-[11px] font-black uppercase tracking-[0.35em] text-red">{active.label}</p>
                   </div>
 
-                  <h2 className="text-5xl sm:text-7xl lg:text-8xl font-sans text-navy leading-[0.9] tracking-tighter font-bold">
+                  <h1 className="text-3xl sm:text-7xl lg:text-8xl font-sans text-navy leading-[0.9] tracking-tighter font-bold">
                     {active.title}
-                  </h2>
-                  <h2 className="text-5xl sm:text-7xl lg:text-8xl font-sans text-red leading-[0.9] tracking-tighter mt-4 font-bold">
+                  </h1>
+                  <p className="text-3xl sm:text-7xl lg:text-8xl font-sans text-red leading-[0.9] tracking-tighter mt-2 sm:mt-4 font-bold">
                     {active.subtitle}
-                  </h2>
+                  </p>
 
                   <div className="mt-10 sm:mt-14 flex items-center gap-8">
                     <Link
