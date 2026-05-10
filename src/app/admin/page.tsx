@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ADMIN_PANEL_PATH } from "@/lib/admin-path";
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -26,7 +27,7 @@ export default function AdminLoginPage() {
       return;
     }
 
-    router.push("/admin/dashboard");
+    router.push(`${ADMIN_PANEL_PATH}/dashboard`);
   };
 
   return (

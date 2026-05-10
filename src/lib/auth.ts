@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 
+import { ADMIN_PANEL_PATH } from "@/lib/admin-path";
 import { prisma } from "@/lib/prisma";
 
 declare module "next-auth" {
@@ -82,6 +83,6 @@ export const authOptions: NextAuthOptions = {
     }
   },
   pages: {
-    signIn: "/admin"
+    signIn: ADMIN_PANEL_PATH
   }
 };

@@ -1,0 +1,23 @@
+
+> risjas@1.0.0 dev
+> next dev
+
+  ▲ Next.js 14.2.5
+  - Local:        http://localhost:3000
+  - Environments: .env
+
+ ✓ Starting...
+ ✓ Ready in 3s
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 13.4s (493 modules)
+ ✓ Compiled in 698ms (240 modules)
+ GET /icon.png 404 in 45ms
+ GET /apple-icon.png 404 in 34ms
+ ○ Compiling /src/middleware ...
+ ✓ Compiled /src/middleware in 833ms (173 modules)
+ ○ Compiling /admin ...
+ ✓ Compiled /admin in 3s (862 modules)
+ GET /dashboard/admin 500 in 3342ms
+ ✓ Compiled in 861ms (876 modules)
+ GET /dashboard/admin 200 in 265ms
+ GET /dashboard/admin 200 in 72ms

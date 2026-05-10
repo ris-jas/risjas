@@ -4,6 +4,12 @@ import Image from "next/image";
 import { BRAND_NAME } from "@/lib/constants";
 import { Youtube, Instagram, Facebook, MapPin, Phone, Mail } from "lucide-react";
 
+type FooterCategory = {
+  id: string;
+  name: string;
+  slug: string;
+};
+
 const footerGroups = [
   {
     title: "QUICK LINKS",
@@ -23,23 +29,12 @@ const footerGroups = [
   }
 ];
 
-const categories = [
-  { label: "Top Collections", href: "/#top-collections" },
-  { label: "Explore Our Range", href: "/#explore-range" },
-  { label: "Kitchen Accessories", href: "/#kitchen-accessories" },
-  { label: "Home Essentials", href: "/#home-essentials" },
-  { label: "Trending Now", href: "/#trending-now" },
-];
-
-export default function Footer() {
+export default function Footer({ categories = [] }: { categories?: FooterCategory[] }) {
   return (
     <div className="px-4 sm:px-6 lg:px-8 pb-8 mt-16">
       <footer className="bg-navy rounded-3xl overflow-hidden shadow-premium relative">
-        {/* Main Content */}
         <div className="max-w-7xl mx-auto px-8 sm:px-12 pt-10 pb-6">
           <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4 items-start">
-
-            {/* Brand Column */}
             <div className="space-y-5">
               <Link href="/" className="inline-block group relative z-10">
                 <div className="w-24 h-24 rounded-full bg-white flex items-center justify-center shadow-xl overflow-hidden transition-all duration-500 group-hover:scale-125 group-hover:shadow-premium">
@@ -67,7 +62,6 @@ export default function Footer() {
               </div>
             </div>
 
-            {/* Link Groups */}
             {footerGroups.map((group) => (
               <div key={group.title} className="lg:pl-6">
                 <p className="text-[11px] font-black tracking-[0.3em] text-white/40 mb-5 uppercase font-sans">{group.title}</p>
@@ -81,20 +75,24 @@ export default function Footer() {
               </div>
             ))}
 
-            {/* Categories */}
             <div className="lg:pl-4">
               <p className="text-[11px] font-black tracking-[0.3em] text-white/40 mb-5 uppercase font-sans">Categories</p>
               <div className="space-y-2 text-[13.5px] text-white font-medium">
-                {categories.map((item) => (
-                  <Link key={item.label} href={item.href} className="block transition-all hover:text-red hover:translate-x-1 duration-300 font-sans">
-                    {item.label}
+                {categories.length ? (
+                  categories.slice(0, 8).map((item) => (
+                    <Link key={item.id} href={`/products?category=${encodeURIComponent(item.slug)}`} className="block transition-all hover:text-red hover:translate-x-1 duration-300 font-sans">
+                      {item.name}
+                    </Link>
+                  ))
+                ) : (
+                  <Link href="/products" className="block transition-all hover:text-red hover:translate-x-1 duration-300 font-sans">
+                    Browse Products
                   </Link>
-                ))}
+                )}
               </div>
             </div>
           </div>
 
-          {/* Social Icons - Compact Centered */}
           <div className="mt-8 pt-5 border-t border-white/5 flex flex-col items-center">
             <p className="text-[10px] font-black tracking-[0.4em] text-white mb-4 uppercase font-sans">Connect With Us</p>
             <div className="flex gap-4">
@@ -111,13 +109,11 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Bottom Bar */}
         <div className="bg-black/20 border-t border-white/5 px-8 sm:px-12 py-4 relative z-10 text-center">
           <p className="text-[10px] text-white font-bold tracking-[0.2em] font-sans">
-            © 2026 {BRAND_NAME.toUpperCase()}. ALL RIGHTS RESERVED.
+            (c) 2026 {BRAND_NAME.toUpperCase()}. ALL RIGHTS RESERVED.
           </p>
         </div>
-
       </footer>
     </div>
   );

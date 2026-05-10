@@ -18,17 +18,27 @@ export default function ProductActions({ productId, variant = "default", classNa
 
   const addToCart = async () => {
     setLoading(true);
-    await fetch("/api/cart", {
+    const response = await fetch("/api/cart", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ productId, quantity: 1 })
     });
+    const result = await response.json();
     setLoading(false);
+
+    if (!result?.success) {
+      window.alert(result?.message || "Unable to add product to cart");
+      return false;
+    }
+
+    window.dispatchEvent(new Event("risjas:cart-updated"));
     router.refresh();
+    return true;
   };
 
   const buyNow = async () => {
-    await addToCart();
+    const added = await addToCart();
+    if (!added) return;
     router.push("/checkout");
   };
 

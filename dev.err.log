@@ -1,0 +1,3 @@
+ ⨯ Error: [next-auth]: `useSession` must be wrapped in a <SessionProvider />
+    at AdminLoginPage (./src/app/admin/page.tsx:24:98)
+digest: "436259685"

@@ -54,19 +54,109 @@ export const orderRepository = {
     return prisma.order.update({ where: { id }, data: { paymentStatus } });
   },
 
+  async reserveStockForOrder(orderId: string) {
+    return prisma.$transaction(async (tx) => {
+      const order = await tx.order.findUnique({
+        where: { id: orderId },
+        include: { items: true }
+      });
+      if (!order) {
+        throw new Error("Order not found");
+      }
+
+      const reservationReason = `ORDER:${orderId}:RESERVED`;
+      const alreadyReserved = await tx.inventoryLog.count({
+        where: {
+          reason: reservationReason
+        }
+      });
+
+      if (alreadyReserved > 0) {
+        return { reserved: true, alreadyReserved: true };
+      }
+
+      for (const item of order.items) {
+        const product = await tx.product.findUnique({
+          where: { id: item.productId },
+          select: { id: true, stock: true, name: true, isActive: true }
+        });
+
+        if (!product || !product.isActive) {
+          throw new Error(`${item.productName} is unavailable`);
+        }
+
+        if (Number(product.stock) < item.quantity) {
+          throw new Error(`${item.productName} has insufficient stock`);
+        }
+      }
+
+      for (const item of order.items) {
+        await tx.product.update({
+          where: { id: item.productId },
+          data: { stock: { decrement: item.quantity } }
+        });
+
+        await tx.inventoryLog.create({
+          data: {
+            productId: item.productId,
+            change: -item.quantity,
+            reason: reservationReason
+          }
+        });
+      }
+
+      return { reserved: true, alreadyReserved: false };
+    });
+  },
+
   async stats() {
-    const [orders, delivered, cancelled, pending, products] = await Promise.all([
+    const [orders, delivered, cancelled, pending, products, lowStockProducts, topOrderItems, recentOrders] = await Promise.all([
       prisma.order.findMany(),
       prisma.order.count({ where: { status: "DELIVERED" } }),
       prisma.order.count({ where: { status: "CANCELLED" } }),
       prisma.order.count({ where: { status: "PENDING" } }),
-      prisma.product.count()
+      prisma.product.count({ where: { isActive: true } }),
+      prisma.product.count({ where: { isActive: true, stock: { lte: 10 } } }),
+      prisma.orderItem.groupBy({
+        by: ["productId"],
+        _sum: { quantity: true },
+        orderBy: {
+          _sum: {
+            quantity: "desc"
+          }
+        },
+        take: 5
+      }),
+      prisma.order.findMany({
+        take: 8,
+        orderBy: { createdAt: "desc" },
+        include: { items: true }
+      })
     ]);
 
     const totalRevenue = orders.reduce((acc, order) => acc + Number(order.total), 0);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const todayOrders = orders.filter((o) => o.createdAt >= today).length;
+
+    const topProductIds = topOrderItems.map((item) => item.productId);
+    const topProducts = topProductIds.length
+      ? await prisma.product.findMany({
+          where: { id: { in: topProductIds } },
+          include: { images: true }
+        })
+      : [];
+    const topProductMap = new Map(topProducts.map((product) => [product.id, product]));
+    const bestSellingProducts = topOrderItems
+      .map((item) => {
+        const product = topProductMap.get(item.productId);
+        if (!product) return null;
+        return {
+          ...product,
+          soldQty: Number(item._sum.quantity || 0)
+        };
+      })
+      .filter(Boolean);
 
     return {
       totalRevenue,
@@ -76,17 +166,9 @@ export const orderRepository = {
       deliveredOrders: delivered,
       cancelledOrders: cancelled,
       totalProducts: products,
-      lowStockProducts: await prisma.product.count({ where: { stock: { lt: 10 } } }),
-      bestSellingProducts: await prisma.product.findMany({
-        where: { isBestSeller: true },
-        take: 5,
-        include: { images: true }
-      }),
-      recentOrders: await prisma.order.findMany({
-        take: 8,
-        orderBy: { createdAt: "desc" },
-        include: { items: true }
-      })
+      lowStockProducts,
+      bestSellingProducts,
+      recentOrders
     };
   }
 };

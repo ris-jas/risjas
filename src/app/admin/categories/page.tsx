@@ -1,44 +1,40 @@
-﻿import CategoryForm from "@/components/admin/CategoryForm";
-import CategoryDeleteButton from "@/components/admin/CategoryDeleteButton";
+import { Layers3 } from "lucide-react";
+
+import CategoryCards from "@/components/admin/CategoryCards";
+import CategoryForm from "@/components/admin/CategoryForm";
 import { categoryService } from "@/services/category.service";
 
 export default async function AdminCategoriesPage() {
   const categories = await categoryService.listAdmin();
+  const activeCount = categories.filter((category) => category.isActive).length;
 
   return (
-    <div className="space-y-5">
-      <div>
-        <h1 className="text-[58px] text-6xl font-bold">Taxonomy & Promotions</h1>
-        <p className="mt-2 text-2xl text-zinc-600">Manage store categories and discount coupons.</p>
-      </div>
-
-      <div className="grid gap-5 xl:grid-cols-2">
-        <div className="space-y-4 rounded-2xl border border-zinc-300 bg-zinc-100 p-5">
-          <h2 className="text-4xl text-4xl font-semibold">Categories</h2>
-          <CategoryForm />
-          <div className="space-y-3">
-            {categories.map((category) => (
-              <div key={category.id} className="flex items-center justify-between rounded-2xl border border-zinc-300 bg-zinc-50 px-4 py-4">
-                <div>
-                  <p className="text-2xl font-semibold">{category.name}</p>
-                  <p className="text-zinc-600">/{category.slug}</p>
-                </div>
-                <div className="flex items-center gap-3">
-                  <span className={`rounded-full px-3 py-1 text-sm ${category.isActive ? "bg-emerald-100 text-emerald-700" : "bg-zinc-200 text-zinc-700"}`}>{category.isActive ? "Active" : "Inactive"}</span>
-                  <CategoryDeleteButton id={category.id} />
-                </div>
-              </div>
-            ))}
-          </div>
+    <div className="space-y-6">
+      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-soft sm:p-7">
+        <h1 className="text-4xl font-bold leading-tight text-navy sm:text-5xl">Categories</h1>
+        <p className="mt-2 text-base text-slate-600 sm:text-lg">Manage category structure and visibility for your storefront.</p>
+        <div className="mt-4 flex flex-wrap gap-2.5">
+          <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-600">
+            Total Categories: {categories.length}
+          </span>
+          <span className="rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
+            Active: {activeCount}
+          </span>
         </div>
+      </section>
 
-        <div className="rounded-2xl border border-zinc-300 bg-zinc-100 p-5">
-          <h2 className="text-4xl text-4xl font-semibold">Coupons</h2>
-          <p className="mt-2 text-zinc-600">Use dedicated Coupons page to create and manage offers.</p>
-          <a href="/admin/coupons" className="mt-4 inline-block rounded-xl bg-black px-4 py-2 font-semibold text-white">Open Coupons</a>
+      <section className="space-y-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-soft sm:p-6">
+        <div className="flex items-center gap-2">
+          <Layers3 className="h-5 w-5 text-navy" />
+          <h2 className="text-3xl font-bold text-navy">Add Category</h2>
         </div>
-      </div>
+        <CategoryForm />
+      </section>
+
+      <section className="space-y-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-soft sm:p-6">
+        <h2 className="text-3xl font-bold text-navy">Category Cards</h2>
+        <CategoryCards categories={categories} />
+      </section>
     </div>
   );
 }
-

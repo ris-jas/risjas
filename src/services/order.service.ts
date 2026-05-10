@@ -68,6 +68,10 @@ export const orderService = {
       }
     });
 
+    if (payload.paymentMethod === PaymentMethod.COD) {
+      await orderRepository.reserveStockForOrder(order.id);
+    }
+
     await cartService.clearCart(cart.id);
 
     return order;

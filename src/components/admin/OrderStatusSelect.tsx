@@ -21,7 +21,11 @@ export default function OrderStatusSelect({ id, value, type }: { id: string; val
   };
 
   return (
-    <select className="h-11 rounded-xl border border-zinc-400 bg-zinc-50 px-3 text-sm font-medium" defaultValue={value} onChange={(e) => onChange(e.target.value)}>
+    <select
+      className="h-10 rounded-lg border border-slate-200 bg-slate-50 px-3 text-xs font-semibold text-slate-700 outline-none transition focus:border-navy focus:bg-white focus:ring-2 focus:ring-red-100"
+      defaultValue={value}
+      onChange={(e) => onChange(e.target.value)}
+    >
       {options.map((option) => (
         <option key={option} value={option}>
           {option.replaceAll("_", " ")}

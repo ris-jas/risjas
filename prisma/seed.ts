@@ -25,30 +25,136 @@ async function main() {
     }
   });
 
-  const categories = await Promise.all([
-    prisma.category.upsert({
-      where: { slug: "cooling-gadgets" },
-      update: {},
-      create: { name: "Cooling Gadgets", slug: "cooling-gadgets", isActive: true }
-    }),
-    prisma.category.upsert({
-      where: { slug: "cute-gifts" },
-      update: {},
-      create: { name: "Cute Gifts", slug: "cute-gifts", isActive: true }
-    }),
-    prisma.category.upsert({
-      where: { slug: "kitchen-tools" },
-      update: {},
-      create: { name: "Kitchen Tools", slug: "kitchen-tools", isActive: true }
-    }),
-    prisma.category.upsert({
-      where: { slug: "drinkware" },
-      update: {},
-      create: { name: "Drinkware", slug: "drinkware", isActive: true }
-    })
-  ]);
+  const categoryDefs = [
+    { name: "Cooling Gadgets", slug: "cooling-gadgets" },
+    { name: "Cute Gifts", slug: "cute-gifts" },
+    { name: "Kitchen Tools", slug: "kitchen-tools" },
+    { name: "Drinkware", slug: "drinkware" },
+    { name: "New Drops", slug: "new-drops" },
+    { name: "Smart Gadgets", slug: "smart-gadgets" },
+    { name: "Aesthetic Decor", slug: "aesthetic-decor" },
+    { name: "Kitchen & Dining", slug: "kitchen-dining" },
+    { name: "Trending Now", slug: "trending-now" },
+    { name: "Best Sellers", slug: "best-sellers" },
+    { name: "Lifestyle", slug: "lifestyle" }
+  ];
 
-  const products = [
+  const categories = [];
+  for (const category of categoryDefs) {
+    const saved = await prisma.category.upsert({
+      where: { slug: category.slug },
+      update: { name: category.name, isActive: true },
+      create: { name: category.name, slug: category.slug, isActive: true }
+    });
+    categories.push(saved);
+  }
+
+  const slugify = (value: string) =>
+    value
+      .toLowerCase()
+      .replace(/&/g, "and")
+      .replace(/\+/g, "plus")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+
+  const dynamicCatalog: Record<string, string[]> = {
+    "new-drops": [
+      "Galaxy Astronaut Projector",
+      "Digital Tape Measure",
+      "Magnetic Levitation Floating Plant Pot",
+      "Crystal Hair Eraser",
+      "Retro Bluetooth Speaker",
+      "Smart Coffee Mug Warmer",
+      "Electric Spin Scrubber",
+      "Cloud Bread Lamp",
+      "Anti-Gravity Humidifier",
+      "Portable Mini Label Printer"
+    ],
+    "smart-gadgets": [
+      "Mini Mist Fan Cooler",
+      "Electric Lint Remover",
+      "3-in-1 Foldable Wireless Charger",
+      "Smart Temperature Display Bottle",
+      "Portable Electric Candle Lighter",
+      "Screen Cleaning Kit",
+      "Mini Cordless Vacuum",
+      "Fingerprint Padlock",
+      "Motion Sensor Wardrobe Lights",
+      "Neck Hanging Fan"
+    ],
+    "aesthetic-decor": [
+      "Cute Panda Night Lamp",
+      "Tulip Mirror Night Light",
+      "Sand Art Liquid Motion Frame",
+      "Acrylic LED Note Board",
+      "Sunset Lamp",
+      "Tulip Shaped Ceramic Vase",
+      "3D Moon Lamp",
+      "Minimalist Kinetic Desk Toy",
+      "Fake Ivy Vines with LED String",
+      "Bubble Shaped Scented Candles"
+    ],
+    "kitchen-dining": [
+      "Portable Mixture Juicer",
+      "Slice Aesthetic Water Bottle",
+      "Electric Milk Frother",
+      "Mini Heat Bag Sealer",
+      "Oil Spray Bottle",
+      "Electric Salt and Pepper Grinder",
+      "Silicone Stretch Lids Set",
+      "Multi-function Veggie Chopper",
+      "Aesthetic Cereal Salad Bowls",
+      "Automatic Water Dispenser Pump"
+    ],
+    "trending-now": [
+      "Flame Effect Air Humidifier",
+      "TikTok Remote Shutter Scroller",
+      "RGB Corner Floor Lamp",
+      "Automatic Pet Feeder and Waterer",
+      "Electric Scalp Massager",
+      "DIY Punch Needle Kit",
+      "Quirky Puffy Phone Case",
+      "Tile Key Finder Tracker",
+      "Weighted Blanket",
+      "Infinity Cube Fidget Toy"
+    ],
+    "best-sellers": [
+      "Mini Massage Gun",
+      "Universal Travel Adapter",
+      "Cute Animal Cable Protectors",
+      "Phone Screen Magnifier",
+      "Vanity Mirror with LED Lights",
+      "Mosquito Killer Lamp",
+      "Travel Makeup Organizer Bag",
+      "Reusable Silicone Drinking Straws",
+      "Memory Foam Neck Pillow",
+      "Transparent Waterproof Phone Pouch"
+    ],
+    lifestyle: [
+      "Silk Eye Mask and Scrunchie Set",
+      "Acupressure Massage Slippers",
+      "Portable Jewelry Organizer Box",
+      "Blue Light Blocking Glasses",
+      "Foldable Shopping Tote Bag",
+      "Mini First-Aid Kit",
+      "Essential Oil Diffuser",
+      "Cute 3D Keychain",
+      "Collapsible Silicone Cup",
+      "Microfiber Hair Drying Turban"
+    ]
+  };
+
+  const categoryPricing: Record<string, { mrp: number; price: number }> = {
+    "new-drops": { mrp: 1999, price: 1299 },
+    "smart-gadgets": { mrp: 1899, price: 1199 },
+    "aesthetic-decor": { mrp: 1599, price: 999 },
+    "kitchen-dining": { mrp: 1799, price: 1149 },
+    "trending-now": { mrp: 2099, price: 1399 },
+    "best-sellers": { mrp: 1699, price: 1099 },
+    lifestyle: { mrp: 1499, price: 899 }
+  };
+
+  const baseProducts = [
     {
       name: "Mini Mist Fan Cooler",
       slug: "mini-mist-fan-cooler",
@@ -59,7 +165,7 @@ async function main() {
       specifications: { material: "ABS", battery: "2000mAh", charging: "USB-C", use: "Desk/bedside" },
       mrp: 1499,
       price: 999,
-      stock: 80,
+      stock: 50,
       isFeatured: true,
       isBestSeller: true,
       categorySlug: "cooling-gadgets",
@@ -75,7 +181,7 @@ async function main() {
       specifications: { material: "Silicone + ABS", charging: "USB", lightMode: "Warm + RGB", control: "Touch/Tap" },
       mrp: 1299,
       price: 849,
-      stock: 90,
+      stock: 50,
       isFeatured: true,
       isBestSeller: true,
       categorySlug: "cute-gifts",
@@ -91,7 +197,7 @@ async function main() {
       specifications: { battery: "1200mAh", charging: "USB", capacity: "Approx 350ml", body: "Food grade plastic" },
       mrp: 1999,
       price: 1399,
-      stock: 55,
+      stock: 50,
       isFeatured: true,
       isBestSeller: true,
       categorySlug: "kitchen-tools",
@@ -107,13 +213,48 @@ async function main() {
       specifications: { capacity: "500ml", body: "Stainless steel", insulation: "Double-wall vacuum" },
       mrp: 1199,
       price: 749,
-      stock: 120,
+      stock: 50,
       isFeatured: true,
       isBestSeller: true,
       categorySlug: "drinkware",
       images: ["/products/flask-400ml.png"]
     }
   ];
+
+  const generatedProducts = Object.entries(dynamicCatalog).flatMap(([categorySlug, names], categoryIndex) => {
+    const pricing = categoryPricing[categorySlug];
+
+    return names.map((name, itemIndex) => {
+      const slug = slugify(name);
+      const mrp = pricing.mrp + (itemIndex % 3) * 100;
+      const price = pricing.price + (itemIndex % 3) * 80;
+      const sku = `RIS-${categorySlug.slice(0, 3).toUpperCase()}-${String(itemIndex + 1).padStart(3, "0")}-${categoryIndex + 1}`;
+
+      return {
+        name,
+        slug,
+        sku,
+        shortDescription: `${name} - premium quality product for daily smart lifestyle use.`,
+        description: `${name} is a practical and trendy pick from Risjas. Designed for everyday convenience, attractive style, and reliable performance.`,
+        highlights: ["Modern design", "Easy to use", "Durable build", "Perfect for daily use"],
+        specifications: {
+          category: categorySlug,
+          material: "Premium quality mixed material",
+          usage: "Home / Office / Travel",
+          stockMode: "Ready stock"
+        },
+        mrp,
+        price,
+        stock: 50,
+        isFeatured: categorySlug === "new-drops" || categorySlug === "trending-now",
+        isBestSeller: categorySlug === "best-sellers",
+        categorySlug,
+        images: ["/products/cute-panda.png"]
+      };
+    });
+  });
+
+  const products = [...baseProducts, ...generatedProducts];
 
   for (const item of products) {
     const category = categories.find((c) => c.slug === item.categorySlug);

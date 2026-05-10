@@ -4,6 +4,7 @@ import { OrderStatus, PaymentStatus } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
 import { getRazorpayClient } from "@/lib/razorpay";
+import { orderRepository } from "@/repositories/order.repository";
 
 export const paymentService = {
   async createRazorpayOrder(orderId: string) {
@@ -36,6 +37,18 @@ export const paymentService = {
     razorpayPaymentId: string;
     razorpaySignature: string;
   }) {
+    const existingOrder = await prisma.order.findUnique({
+      where: { id: payload.orderId },
+      select: { id: true, paymentStatus: true, status: true }
+    });
+    if (!existingOrder) {
+      throw new Error("Order not found");
+    }
+
+    if (existingOrder.paymentStatus === PaymentStatus.PAID) {
+      return { verified: true, alreadyPaid: true };
+    }
+
     const generated = crypto
       .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET || "")
       .update(`${payload.razorpayOrderId}|${payload.razorpayPaymentId}`)
@@ -59,6 +72,8 @@ export const paymentService = {
 
       throw new Error("Payment signature verification failed");
     }
+
+    await orderRepository.reserveStockForOrder(payload.orderId);
 
     await prisma.order.update({
       where: { id: payload.orderId },

@@ -4,16 +4,28 @@ import Image from "next/image";
 
 export default function CartItem({ item }: { item: any }) {
   const updateQty = async (quantity: number) => {
-    await fetch(`/api/cart/items/${item.id}`, {
+    const response = await fetch(`/api/cart/items/${item.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ quantity })
     });
+    const result = await response.json();
+    if (!result?.success) {
+      window.alert(result?.message || "Unable to update cart quantity");
+      return;
+    }
+    window.dispatchEvent(new Event("risjas:cart-updated"));
     window.location.reload();
   };
 
   const remove = async () => {
-    await fetch(`/api/cart/items/${item.id}`, { method: "DELETE" });
+    const response = await fetch(`/api/cart/items/${item.id}`, { method: "DELETE" });
+    const result = await response.json();
+    if (!result?.success) {
+      window.alert(result?.message || "Unable to remove cart item");
+      return;
+    }
+    window.dispatchEvent(new Event("risjas:cart-updated"));
     window.location.reload();
   };
 

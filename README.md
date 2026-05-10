@@ -82,7 +82,7 @@ Admin credentials are created from:
 - `ADMIN_EMAIL`
 - `ADMIN_PASSWORD`
 
-Use `/admin` to login.
+Use `/dashboard/admin` to login. (`/admin` automatically redirects to this URL.)
 
 ## Razorpay Setup
 

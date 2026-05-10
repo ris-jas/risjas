@@ -1,263 +1,188 @@
-"use client";
-
-import Image from "next/image";
 import Link from "next/link";
-import { ShieldCheck, Sparkles, Truck, Star, ArrowRight, Eye, ShoppingCart } from "lucide-react";
-import { motion } from "framer-motion";
 
-import HeroCarousel from "@/components/home/HeroCarousel";
+import HeroCarousel, { HeroSlide } from "@/components/home/HeroCarousel";
+import ProductCard from "@/components/product/ProductCard";
+import { categoryService } from "@/services/category.service";
+import { productService } from "@/services/product.service";
+import { prisma } from "@/lib/prisma";
 
-const categories = [
-  { title: "Smart Accessories", image: "/products/portable-mini-air.png", href: "/products" },
-  { title: "Bathroom", image: "/products/studio/studio-lamp.jpg", href: "/products" },
-  { title: "Deal of the Day", image: "/products/flask-400ml.png", href: "/products" },
-  { title: "Kitchen", image: "/products/portable-mini-air.png", href: "/products" },
-  { title: "Small Electronics", image: "/products/studio/studio-lamp.jpg", href: "/products" },
-  { title: "Stationary", image: "/products/flask-400ml.png", href: "/products" },
-  { title: "Jewellery", image: "/products/portable-mini-air.png", href: "/products" },
-  { title: "Gifts", image: "/products/studio/studio-lamp.jpg", href: "/products" },
-  { title: "Electronics", image: "/products/flask-400ml.png", href: "/products" },
-  { title: "Home Decor", image: "/products/studio/studio-lamp.jpg", href: "/products" },
-  { title: "Care & Beauty", image: "/products/portable-mini-air.png", href: "/products" },
-  { title: "Health & Beauty", image: "/products/flask-400ml.png", href: "/products" }
+export const dynamic = "force-dynamic";
+
+const dealRanges = [
+  { label: "Under Rs. 199", min: 0, max: 199 },
+  { label: "Under Rs. 499", min: 0, max: 499 },
+  { label: "Under Rs. 999", min: 0, max: 999 },
+  { label: "Rs. 1000 - 1999", min: 1000, max: 1999 },
+  { label: "Above Rs. 2000", min: 2000 }
 ];
 
-const priceDeals = [
-  { title: "UNDER ₹9", bg: "bg-navy" },
-  { title: "UNDER ₹29", bg: "bg-navy" },
-  { title: "UNDER ₹49", bg: "bg-navy" },
-  { title: "UNDER ₹149", bg: "bg-navy" },
-  { title: "UNDER ₹249", bg: "bg-navy" },
-  { title: "UNDER ₹349", bg: "bg-navy" },
-  { title: "UNDER ₹449", bg: "bg-navy" },
-  { title: "UNDER ₹499", bg: "bg-navy" },
-  { title: "UNDER ₹999", bg: "bg-navy" },
-  { title: "ABOVE ₹1000", bg: "bg-navy" }
+const heroBackgrounds = [
+  "from-[#f7ebef] via-white to-[#eef3ff]",
+  "from-[#eef4ff] via-white to-[#ffeef6]",
+  "from-[#fff4ef] via-white to-[#eefaf7]",
+  "from-[#f1f5ff] via-white to-[#fff1f6]"
 ];
 
-const sellingFastProducts = [
-  { id: 1, name: "Panda Night Lamp", image: "/products/studio/studio-lamp.jpg", price: "Rs. 149.00", original: "Rs. 499.00", badge: "HOT SALE" },
-  { id: 2, name: "Mist Fan Portable", image: "/products/portable-mini-air.png", price: "Rs. 249.00", original: "Rs. 899.00", badge: "NEW" },
-  { id: 3, name: "Kitchen Flask 400ml", image: "/products/flask-400ml.png", price: "Rs. 99.00", original: "Rs. 299.00", badge: "TRENDING" },
-  { id: 4, name: "Silicon Kitchen Tool", image: "/products/portable-mini-air.png", price: "Rs. 149.00", original: "Rs. 399.00", badge: "HOT SALE" },
-  { id: 5, name: "Electric Chopper", image: "/products/studio/studio-lamp.jpg", price: "Rs. 349.00", original: "Rs. 999.00", badge: "TOP RATED" }
-];
+function toTitleParts(text?: string) {
+  const value = (text || "Risjas Picks").trim();
+  const parts = value.split(" ");
+  if (parts.length === 1) return { title: parts[0], subtitle: "Collection" };
+  return {
+    title: parts.slice(0, Math.ceil(parts.length / 2)).join(" "),
+    subtitle: parts.slice(Math.ceil(parts.length / 2)).join(" ")
+  };
+}
 
-const renderSectionTitle = (title: string, subtitle?: string) => (
-  <div className="flex flex-col items-center justify-center mb-12">
-    <motion.div 
-      initial={{ width: 0 }}
-      whileInView={{ width: 60 }}
-      viewport={{ once: true }}
-      className="h-[2px] bg-red mb-4"
-    ></motion.div>
-    <h2 className="text-center text-3xl sm:text-4xl font-sans text-navy px-6 tracking-tight font-bold">{title}</h2>
-    {subtitle && <p className="text-[10px] font-bold tracking-[0.4em] text-slate-400 uppercase mt-3">{subtitle}</p>}
-  </div>
-);
+function buildHeroSlides(banners: any[], featuredProducts: any[]): HeroSlide[] {
+  if (banners.length) {
+    return banners.slice(0, 4).map((banner, index) => {
+      const { title, subtitle } = toTitleParts(banner.title || banner.subtitle || "Risjas Picks");
+      return {
+        id: banner.id,
+        image: banner.imageUrl,
+        bg: heroBackgrounds[index % heroBackgrounds.length],
+        title,
+        subtitle,
+        label: banner.subtitle || "Fresh Collection",
+        buttonText: banner.buttonText || "Shop Now",
+        buttonLink: banner.buttonLink || "/products"
+      };
+    });
+  }
 
-export default function HomePage() {
+  return featuredProducts.slice(0, 4).map((product, index) => {
+    const { title, subtitle } = toTitleParts(product.name);
+    return {
+      id: product.id,
+      image: product.images?.[0]?.imageUrl || "/products/cute-panda.png",
+      bg: heroBackgrounds[index % heroBackgrounds.length],
+      title,
+      subtitle,
+      label: product.category?.name || "Trending",
+      priceText: `Rs. ${Number(product.price || 0).toFixed(0)}`,
+      discountText: `${Math.max(0, Number(product.discountPercent || 0))}% OFF`,
+      buttonText: "View Product",
+      buttonLink: `/product/${product.slug}`
+    };
+  });
+}
+
+export default async function HomePage() {
+  const [categories, featuredProducts, bestSellerProducts, latestProducts, banners] = await Promise.all([
+    categoryService.listActive(),
+    productService.list({ featured: true, sort: "newest" as any }),
+    productService.list({ bestSeller: true, sort: "newest" as any }),
+    productService.list({ sort: "newest" as any }),
+    prisma.banner.findMany({ where: { isActive: true }, orderBy: { createdAt: "desc" }, take: 4 })
+  ]);
+
+  const heroSlides = buildHeroSlides(banners, featuredProducts.length ? featuredProducts : latestProducts);
+  const topCollections = categories.slice(0, 12);
+  const trendingProducts = (bestSellerProducts.length ? bestSellerProducts : latestProducts).slice(0, 10);
+  const freshDrops = latestProducts.slice(0, 8);
+
   return (
-    <div className="bg-[#FCFCFC] pb-16 font-sans pt-[80px] lg:pt-[128px]">
-      <HeroCarousel />
+    <div className="bg-[#FCFCFC] pb-16 pt-[80px] lg:pt-[128px]">
+      <HeroCarousel slides={heroSlides} />
 
-      {/* Featured Categories Grid */}
-      <section id="top-collections" className="container-page pt-20">
-        <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.8 }}>
-          {renderSectionTitle("Top Collections", "Curated for you")}
-          <div className="mt-6 grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-x-6 gap-y-10">
-            {categories.map((item, idx) => (
-              <motion.div 
-                key={item.title + idx}
-                whileHover={{ y: -8 }}
-                className="flex flex-col items-center text-center group cursor-pointer"
-              >
-                <Link href={item.href} className="relative h-[100px] w-[100px] sm:h-[120px] sm:w-[120px] mb-4">
-                  <div className="absolute inset-0 bg-white rounded-full shadow-soft border border-slate-100 group-hover:border-red/20 group-hover:shadow-premium transition-all duration-500"></div>
-                  <div className="relative h-full w-full overflow-hidden rounded-full p-4 flex items-center justify-center">
-                    <Image src={item.image} alt={item.title} fill sizes="(max-width: 768px) 100px, 120px" className="object-contain p-4 group-hover:scale-110 transition duration-500" />
-                  </div>
-                </Link>
-                <p className="text-[11px] sm:text-xs font-bold text-navy/80 tracking-wide uppercase group-hover:text-red transition leading-tight max-w-[100px]">{item.title}</p>
-              </motion.div>
-            ))}
+      <section className="container-page pt-16">
+        <div className="rounded-3xl border border-slate-200 bg-white p-6 sm:p-8">
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <h2 className="text-4xl sm:text-5xl font-bold text-navy">Top Collections</h2>
+              <p className="mt-2 text-slate-600">Shop by your live category catalog.</p>
+            </div>
+            <Link href="/products" className="rounded-full bg-navy px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-red">
+              View All
+            </Link>
           </div>
-        </motion.div>
-      </section>
 
-      {/* Range Section with Glass Cards */}
-      <section id="explore-range" className="container-page pt-24">
-        <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ duration: 1 }}>
-          {renderSectionTitle("Explore Our Range", "Budget friendly picks")}
-          <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-            {priceDeals.map((deal, idx) => (
-              <Link 
-                key={deal.title + idx} 
-                href="/products" 
-                className="relative h-[80px] sm:h-[100px] rounded-xl overflow-hidden flex items-center justify-center bg-navy hover:bg-red transition-all duration-500 shadow-soft hover:shadow-premium group overflow-hidden"
+          <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+            {topCollections.map((category) => (
+              <Link
+                key={category.id}
+                href={`/products?category=${encodeURIComponent(category.slug)}`}
+                className="group rounded-2xl border border-slate-200 bg-gradient-to-br from-white to-[#f8fbff] p-4 transition duration-300 hover:-translate-y-1 hover:border-blue-200 hover:shadow-md"
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-white/5 to-transparent opacity-50"></div>
-                <div className="absolute -right-4 -bottom-4 w-20 h-20 bg-white/5 rounded-full blur-2xl group-hover:bg-white/20 transition-all duration-700"></div>
-                <p className="text-white font-bold text-sm sm:text-lg tracking-[0.15em] z-10">{deal.title}</p>
-                <div className="absolute bottom-0 left-0 w-0 h-[2px] bg-white transition-all duration-500 group-hover:w-full"></div>
+                <p className="text-sm font-semibold text-navy group-hover:text-red line-clamp-2">{category.name}</p>
+                <p className="mt-1 text-xs text-slate-500">/{category.slug}</p>
               </Link>
             ))}
           </div>
-        </motion.div>
+        </div>
       </section>
 
-      {/* Visual Product Showcase */}
-      <div className="grid lg:grid-cols-2 gap-8 container-page pt-24">
-        <section id="kitchen-accessories">
-          <motion.div 
-            initial={{ opacity: 0, x: -30 }} 
-            whileInView={{ opacity: 1, x: 0 }} 
-            viewport={{ once: true }}
-            className="bg-white rounded-3xl p-8 shadow-soft border border-slate-50 overflow-hidden relative group"
-          >
-            <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition">
-              <Sparkles className="w-32 h-32 text-navy" />
-            </div>
-            <h3 className="text-2xl font-sans text-navy font-bold mb-6">Kitchen Accessories</h3>
-            <div className="grid grid-cols-3 gap-4">
-               {Array(3).fill(null).map((_, i) => (
-                 <Link href="/products" key={i} className="group/item relative h-40 bg-slate-50 rounded-2xl overflow-hidden">
-                    <Image src="/products/flask-400ml.png" alt="Kitchen" fill sizes="(max-width: 768px) 33vw, 20vw" className="object-contain p-4 group-hover/item:scale-110 transition duration-500" />
-                    <div className="absolute inset-0 bg-navy/0 group-hover/item:bg-navy/40 flex items-center justify-center opacity-0 group-hover/item:opacity-100 transition-all duration-300">
-                      <Eye className="text-white w-6 h-6" />
-                    </div>
-                 </Link>
-               ))}
-            </div>
-            <Link href="/products" className="mt-8 inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-red hover:gap-4 transition-all">
-              Discover Collection <ArrowRight className="w-3 h-3" />
-            </Link>
-          </motion.div>
-        </section>
-
-        <section id="home-essentials">
-          <motion.div 
-            initial={{ opacity: 0, x: 30 }} 
-            whileInView={{ opacity: 1, x: 0 }} 
-            viewport={{ once: true }}
-            className="bg-white rounded-3xl p-8 shadow-soft border border-slate-50 overflow-hidden relative group"
-          >
-            <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition">
-              <Star className="w-32 h-32 text-navy" />
-            </div>
-            <h3 className="text-2xl font-sans text-navy font-bold mb-6">Home Essentials</h3>
-            <div className="grid grid-cols-3 gap-4">
-               {Array(3).fill(null).map((_, i) => (
-                 <Link href="/products" key={i} className="group/item relative h-40 bg-slate-50 rounded-2xl overflow-hidden">
-                    <Image src="/products/studio/studio-lamp.jpg" alt="Home" fill sizes="(max-width: 768px) 33vw, 20vw" className="object-contain p-4 group-hover/item:scale-110 transition duration-500" />
-                    <div className="absolute inset-0 bg-navy/0 group-hover/item:bg-navy/40 flex items-center justify-center opacity-0 group-hover/item:opacity-100 transition-all duration-300">
-                      <Eye className="text-white w-6 h-6" />
-                    </div>
-                 </Link>
-               ))}
-            </div>
-            <Link href="/products" className="mt-8 inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-red hover:gap-4 transition-all">
-              Discover Collection <ArrowRight className="w-3 h-3" />
-            </Link>
-          </motion.div>
-        </section>
-      </div>
-
-      {/* Trending Now Section with Premium Cards */}
-      <section id="trending-now" className="container-page pt-28">
-        <motion.div initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-          <div className="flex flex-col sm:flex-row items-center justify-between mb-12 gap-4">
-            <div className="text-center sm:text-left">
-              <h2 className="text-3xl sm:text-4xl font-sans text-navy font-bold">Trending Now</h2>
-              <p className="text-[10px] font-bold tracking-[0.4em] text-slate-400 uppercase mt-2">What everyone is buying</p>
-            </div>
-            <Link href="/products" className="group flex items-center gap-3 bg-white border border-slate-200 px-8 py-3 rounded-full text-[10px] font-black tracking-widest uppercase text-navy hover:bg-navy hover:text-white transition-all duration-500 shadow-sm hover:shadow-md">
-              View All Products <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-8">
-            {sellingFastProducts.map((item, idx) => (
-              <motion.div 
-                key={idx}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: idx * 0.1 }}
-                className="group bg-white flex flex-col rounded-3xl overflow-hidden shadow-soft hover:shadow-premium transition-all duration-500 border border-slate-50 relative"
+      <section className="container-page pt-14">
+        <div className="rounded-3xl border border-slate-200 bg-white p-6 sm:p-8">
+          <h2 className="text-3xl sm:text-4xl font-bold text-navy">Explore By Budget</h2>
+          <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+            {dealRanges.map((range) => (
+              <Link
+                key={range.label}
+                href={range.max ? `/products?minPrice=${range.min}&maxPrice=${range.max}` : `/products?minPrice=${range.min}`}
+                className="rounded-2xl bg-navy px-4 py-5 text-center text-sm font-semibold text-white transition duration-300 hover:-translate-y-1 hover:bg-red"
               >
-                <div className="absolute top-3 left-3 z-20">
-                  <span className="bg-red text-white text-[9px] font-black tracking-widest px-3 py-1.5 rounded-full shadow-lg">{item.badge}</span>
-                </div>
-                
-                <div className="relative aspect-[4/5] bg-[#F9FAFB] overflow-hidden">
-                  <Image 
-                    src={item.image} 
-                    alt={item.name} 
-                    fill 
-                    sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 20vw"
-                    className="object-cover group-hover:scale-110 transition duration-700 p-2 mix-blend-multiply" 
-                  />
-                  
-                  {/* Quick Action Overlay */}
-                  <div className="absolute inset-0 bg-navy/20 opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col items-center justify-center gap-3">
-                    <button className="bg-white text-navy p-3 rounded-full hover:bg-red hover:text-white transition-colors transform translate-y-4 group-hover:translate-y-0 duration-500">
-                      <Eye className="w-5 h-5" />
-                    </button>
-                    <button className="bg-navy text-white px-6 py-2.5 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-red transition-colors transform translate-y-4 group-hover:translate-y-0 duration-700">
-                      Add to Cart
-                    </button>
-                  </div>
-                </div>
-
-                <div className="p-6 flex flex-col flex-1 bg-white">
-                  <p className="text-sm text-navy font-bold line-clamp-1 mb-2 group-hover:text-red transition-colors duration-300">{item.name}</p>
-                  <div className="flex items-center gap-3">
-                    <span className="text-red font-black text-base">{item.price}</span>
-                    <span className="text-slate-300 text-xs line-through">{item.original}</span>
-                  </div>
-                </div>
-              </motion.div>
+                {range.label}
+              </Link>
             ))}
           </div>
-          
-          <div className="flex justify-center mt-16">
-             <Link href="/products" className="relative group overflow-hidden bg-navy px-12 py-4 rounded-full text-[10px] font-black tracking-widest uppercase text-white shadow-xl hover:shadow-premium transition-all duration-500">
-                <span className="relative z-10">Load More Products</span>
-                <div className="absolute inset-0 bg-red translate-y-full group-hover:translate-y-0 transition-transform duration-500"></div>
-             </Link>
-          </div>
-        </motion.div>
+        </div>
       </section>
 
-      {/* Trust Badges Section */}
-      <section className="container-page pt-24">
-        <div className="bg-navy rounded-[3rem] p-10 sm:p-16 grid sm:grid-cols-3 gap-10 relative overflow-hidden shadow-premium">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -mr-32 -mt-32"></div>
-          
-          <motion.div whileHover={{ y: -5 }} className="flex flex-col items-center text-center group">
-            <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center mb-6 border border-white/10 group-hover:bg-red group-hover:border-red transition-all duration-500">
-              <Truck className="text-white w-8 h-8" />
-            </div>
-            <h4 className="text-white font-sans text-xl font-bold mb-2">Fast Delivery</h4>
-            <p className="text-white/60 text-xs leading-relaxed max-w-[200px]">Secure and lightning fast shipping across India.</p>
-          </motion.div>
+      <section className="container-page pt-14">
+        <div className="flex items-end justify-between gap-4">
+          <div>
+            <h2 className="text-4xl sm:text-5xl font-bold text-navy">Trending Now</h2>
+            <p className="mt-2 text-slate-600">Dynamic picks based on your live product data.</p>
+          </div>
+          <Link href="/products" className="text-sm font-semibold text-navy hover:text-red transition">Browse All</Link>
+        </div>
 
-          <motion.div whileHover={{ y: -5 }} className="flex flex-col items-center text-center group">
-            <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center mb-6 border border-white/10 group-hover:bg-red group-hover:border-red transition-all duration-500">
-              <ShieldCheck className="text-white w-8 h-8" />
-            </div>
-            <h4 className="text-white font-sans text-xl font-bold mb-2">Secure Payment</h4>
-            <p className="text-white/60 text-xs leading-relaxed max-w-[200px]">100% secure payment gateways and COD available.</p>
-          </motion.div>
+        {trendingProducts.length ? (
+          <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+            {trendingProducts.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        ) : (
+          <div className="mt-6 rounded-3xl border border-slate-200 bg-white p-10 text-center text-slate-500">
+            No active products yet.
+          </div>
+        )}
+      </section>
 
-          <motion.div whileHover={{ y: -5 }} className="flex flex-col items-center text-center group">
-            <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center mb-6 border border-white/10 group-hover:bg-red group-hover:border-red transition-all duration-500">
-              <Sparkles className="text-white w-8 h-8" />
+      <section className="container-page pt-16">
+        <div className="rounded-3xl border border-slate-200 bg-white p-6 sm:p-8">
+          <div className="flex items-end justify-between gap-4">
+            <div>
+              <h2 className="text-3xl sm:text-4xl font-bold text-navy">New Drops</h2>
+              <p className="mt-2 text-slate-600">Latest products added from your admin panel.</p>
             </div>
-            <h4 className="text-white font-sans text-xl font-bold mb-2">Premium Quality</h4>
-            <p className="text-white/60 text-xs leading-relaxed max-w-[200px]">Handpicked products that guarantee satisfaction.</p>
-          </motion.div>
+            <Link href="/products?sort=newest" className="text-sm font-semibold text-navy hover:text-red transition">See Newest</Link>
+          </div>
+
+          <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {freshDrops.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="container-page pt-16">
+        <div className="grid gap-5 sm:grid-cols-3">
+          <div className="rounded-3xl border border-slate-200 bg-white p-5 text-center">
+            <p className="text-lg font-semibold text-navy">Fast Delivery</p>
+            <p className="mt-1 text-sm text-slate-600">Quick dispatch on confirmed orders.</p>
+          </div>
+          <div className="rounded-3xl border border-slate-200 bg-white p-5 text-center">
+            <p className="text-lg font-semibold text-navy">Secure Checkout</p>
+            <p className="mt-1 text-sm text-slate-600">COD and Razorpay both supported.</p>
+          </div>
+          <div className="rounded-3xl border border-slate-200 bg-white p-5 text-center">
+            <p className="text-lg font-semibold text-navy">Real-time Inventory</p>
+            <p className="mt-1 text-sm text-slate-600">Stock updates from live orders and admin edits.</p>
+          </div>
         </div>
       </section>
     </div>
