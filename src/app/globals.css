@@ -1,0 +1,79 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+  --bg-page: #F8F9FA;
+  --bg-card: #ffffff;
+  --bg-soft: #f8fafc;
+  --line: #E2E8F0;
+  --text: #1A2D4B;
+  --text-muted: #64748b;
+  --brand-navy: #1A2D4B;
+  --brand-navy-soft: #2A4065;
+  --brand-red: #D98A81;
+  --brand-red-soft: #F5DCD9;
+}
+
+* {
+  box-sizing: border-box;
+  border-color: var(--line);
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-inter), sans-serif;
+  color: var(--text);
+  letter-spacing: 0.01em;
+  background: var(--bg-page);
+  @apply antialiased;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.font-display {
+  font-family: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  color: var(--brand-navy);
+  letter-spacing: -0.01em;
+}
+
+.container-page {
+  @apply mx-auto w-full max-w-[1280px] px-5 sm:px-8 lg:px-10;
+}
+
+.section-space {
+  @apply py-20 lg:py-24;
+}
+
+input,
+textarea,
+select,
+button {
+  font-family: inherit;
+}
+
+::selection {
+  background: rgba(217, 138, 129, 0.3);
+  color: var(--brand-navy);
+}

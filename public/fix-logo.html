@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<body>
+  <canvas id="canvas"></canvas>
+  <script>
+    const img = new Image();
+    img.crossOrigin = "Anonymous";
+    img.src = '/imgs/Logo.png';
+    img.onload = () => {
+      const canvas = document.getElementById('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      
+      const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const data = imgData.data;
+      
+      // We know the background is a solid color. Let's sample a few edge pixels and average them.
+      let rBg = 0, gBg = 0, bBg = 0;
+      let count = 0;
+      
+      // Sample top edge
+      for (let x = 0; x < canvas.width; x += 10) {
+        const i = (0 * canvas.width + x) * 4;
+        rBg += data[i]; gBg += data[i+1]; bBg += data[i+2]; count++;
+      }
+      rBg /= count; gBg /= count; bBg /= count;
+      
+      const tolerance = 60; // Higher tolerance to capture slight gradients or compression artifacts
+      
+      for (let i = 0; i < data.length; i += 4) {
+        const r = data[i];
+        const g = data[i+1];
+        const b = data[i+2];
+        
+        // Euclidean distance
+        const distance = Math.sqrt(
+          Math.pow(r - rBg, 2) + 
+          Math.pow(g - gBg, 2) + 
+          Math.pow(b - bBg, 2)
+        );
+        
+        if (distance < tolerance) {
+          data[i+3] = 0; // Set alpha to 0
+        }
+      }
+      
+      ctx.putImageData(imgData, 0, 0);
+      
+      const base64 = canvas.toDataURL('image/png');
+      
+      fetch('/api/save-logo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ base64 })
+      }).then(res => res.json())
+        .then(data => {
+          document.body.innerHTML += '<h1>Success!</h1>';
+        });
+    };
+  </script>
+</body>
+</html>
