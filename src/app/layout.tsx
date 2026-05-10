@@ -33,9 +33,9 @@ export const metadata: Metadata = {
     telephone: false,
   },
   icons: {
-    icon: "/imgs/Logo.png",
-    shortcut: "/imgs/Logo.png",
-    apple: "/imgs/Logo.png"
+    icon: "/imgs/Logo-Circle.png",
+    shortcut: "/imgs/Logo-Circle.png",
+    apple: "/imgs/Logo-Circle.png"
   },
   openGraph: {
     title: `${BRAND_NAME} - Premium Lifestyle Store`,
