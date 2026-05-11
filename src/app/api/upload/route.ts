@@ -1,8 +1,8 @@
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-import { r2BucketName, r2Client } from "@/lib/r2";
+import { getR2BucketName, getR2Client } from "@/lib/r2";
 
 export const runtime = "nodejs";
 
@@ -13,9 +13,14 @@ const sanitizeExtension = (fileName = "", fileType = "") => {
   return ext.replace(/[^a-z0-9]/g, "") || "bin";
 };
 
-export async function POST(request) {
+type UploadRequestBody = {
+  fileName?: string;
+  fileType?: string;
+};
+
+export async function POST(request: NextRequest) {
   try {
-    const { fileName, fileType } = await request.json();
+    const { fileName, fileType } = (await request.json()) as UploadRequestBody;
 
     if (!fileName) {
       return NextResponse.json(
@@ -35,12 +40,12 @@ export async function POST(request) {
     const contentType = fileType.trim();
 
     const putCommand = new PutObjectCommand({
-      Bucket: r2BucketName,
+      Bucket: getR2BucketName(),
       Key: key,
       ContentType: contentType
     });
 
-    const uploadUrl = await getSignedUrl(r2Client, putCommand, { expiresIn: 60 });
+    const uploadUrl = await getSignedUrl(getR2Client(), putCommand, { expiresIn: 60 });
 
     return NextResponse.json({
       success: true,

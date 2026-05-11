@@ -1,12 +1,18 @@
 import { GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-import { r2BucketName, r2Client } from "@/lib/r2";
+import { getR2BucketName, getR2Client } from "@/lib/r2";
 
 export const runtime = "nodejs";
 
-export async function GET(_request, { params }) {
+type RouteContext = {
+  params: {
+    key: string;
+  };
+};
+
+export async function GET(_request: NextRequest, { params }: RouteContext) {
   try {
     const key = params?.key ? decodeURIComponent(params.key) : "";
 
@@ -18,11 +24,11 @@ export async function GET(_request, { params }) {
     }
 
     const getCommand = new GetObjectCommand({
-      Bucket: r2BucketName,
+      Bucket: getR2BucketName(),
       Key: key
     });
 
-    const fileUrl = await getSignedUrl(r2Client, getCommand, { expiresIn: 300 });
+    const fileUrl = await getSignedUrl(getR2Client(), getCommand, { expiresIn: 300 });
 
     return NextResponse.json({
       success: true,
