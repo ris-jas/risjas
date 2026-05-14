@@ -1,12 +1,22 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 
+import SeoJsonLd from "@/components/common/SeoJsonLd";
 import HeroCarousel, { HeroSlide } from "@/components/home/HeroCarousel";
 import ProductCard from "@/components/product/ProductCard";
+import { prisma } from "@/lib/prisma";
+import { createPageMetadata, createWebPageSchema } from "@/lib/seo";
 import { categoryService } from "@/services/category.service";
 import { productService } from "@/services/product.service";
-import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
+export const metadata: Metadata = createPageMetadata({
+  title: "Risjas Online Store | Trendy Gadgets & Lifestyle Picks",
+  description:
+    "Shop trendy gadgets, aesthetic decor, and daily-use essentials at Risjas with secure checkout, fast shipping, and reliable customer support across India.",
+  path: "/",
+  keywords: ["home decor India", "smart gadgets online", "boutique lifestyle store", "COD shopping"]
+});
 
 const dealRanges = [
   { label: "Under Rs. 199", min: 0, max: 199 },
@@ -16,53 +26,154 @@ const dealRanges = [
   { label: "Above Rs. 2000", min: 2000 }
 ];
 
-const heroBackgrounds = [
-  "from-[#f7ebef] via-white to-[#eef3ff]",
-  "from-[#eef4ff] via-white to-[#ffeef6]",
-  "from-[#fff4ef] via-white to-[#eefaf7]",
-  "from-[#f1f5ff] via-white to-[#fff1f6]"
+const heroCategoryConfigs = [
+  {
+    id: "aesthetic-decor",
+    match: ["aesthetic decor", "aesthetic-decor", "decor"],
+    tabLabel: "Aesthetic Decor",
+    title: "Aesthetic Decor",
+    subtitle: "Fresh Stylish Picks",
+    label: "Curated Home Styling Picks",
+    priceText: "Rs. 199",
+    bg: "from-[#fff2f7] via-white to-[#eaf2ff]",
+    fallbackImage: "/products/studio/studio-lamp.jpg",
+    highlights: ["Premium Quality", "Fast Delivery", "Trending Finds"]
+  },
+  {
+    id: "best-sellers",
+    match: ["best sellers", "best-sellers", "best seller"],
+    tabLabel: "Best Sellers",
+    title: "Best Sellers",
+    subtitle: "Top Trending Products",
+    label: "Most Loved Customer Picks",
+    priceText: "Rs. 99",
+    bg: "from-[#fff4fa] via-white to-[#e9f1ff]",
+    fallbackImage: "/products/cute-panda.png",
+    highlights: ["Top Rated", "Quick Delivery", "Trusted Quality"]
+  },
+  {
+    id: "cooling-gadgets",
+    match: ["cooling gadgets", "cooling-gadgets", "cooling"],
+    tabLabel: "Cooling Gadgets",
+    title: "Cooling Gadgets",
+    subtitle: "Beat The Heat",
+    label: "Stay Cool With Smart Essentials",
+    priceText: "Rs. 149",
+    bg: "from-[#e9f4ff] via-white to-[#f2f8ff]",
+    fallbackImage: "/products/portable-mini-air.png",
+    highlights: ["Portable Design", "Summer Ready", "Quick Delivery"]
+  },
+  {
+    id: "cute-gifts",
+    match: ["cute gifts", "cute-gifts", "gift"],
+    tabLabel: "Cute Gifts",
+    title: "Cute Gifts",
+    subtitle: "Sweet Little Surprises",
+    label: "Charming Picks For Every Occasion",
+    priceText: "Rs. 99",
+    bg: "from-[#fff0f5] via-white to-[#f6f1ff]",
+    fallbackImage: "/products/panda-trending-banner.png",
+    highlights: ["Gift Ready", "Budget Friendly", "Fast Shipping"]
+  },
+  {
+    id: "drinkware",
+    match: ["drinkware", "bottle", "tumbler"],
+    tabLabel: "Drinkware",
+    title: "Drinkware",
+    subtitle: "Hydrate In Style",
+    label: "Sip In Style Every Day",
+    priceText: "Rs. 129",
+    bg: "from-[#eef5ff] via-white to-[#f2f9ff]",
+    fallbackImage: "/products/studio/studio-bottle.jpg",
+    highlights: ["Leak Proof", "Trendy Styles", "Daily Essentials"]
+  },
+  {
+    id: "kitchen-dining",
+    match: ["kitchen & dining", "kitchen-dining", "dining"],
+    tabLabel: "Kitchen & Dining",
+    title: "Kitchen & Dining",
+    subtitle: "Cook Serve Enjoy",
+    label: "Modern Essentials For Every Meal",
+    priceText: "Rs. 249",
+    bg: "from-[#fff6f0] via-white to-[#eef4ff]",
+    fallbackImage: "/products/flask-400ml.png",
+    highlights: ["Everyday Utility", "Premium Finish", "Customer Favorites"]
+  },
+  {
+    id: "kitchen-tools",
+    match: ["kitchen tools", "kitchen-tools", "tools"],
+    tabLabel: "Kitchen Tools",
+    title: "Kitchen Tools",
+    subtitle: "Chop Mix Prep",
+    label: "Smart Tools For Easy Cooking",
+    priceText: "Rs. 99",
+    bg: "from-[#fff7f2] via-white to-[#edf3ff]",
+    fallbackImage: "/products/panda-usb-charging.png",
+    highlights: ["Easy To Use", "Daily Utility", "Best Value"]
+  },
+  {
+    id: "lifestyle",
+    match: ["lifestyle", "home", "daily"],
+    tabLabel: "Lifestyle",
+    title: "Lifestyle",
+    subtitle: "Upgrade Everyday Living",
+    label: "Daily Essentials With A Smart Twist",
+    priceText: "Rs. 199",
+    bg: "from-[#fff5ef] via-white to-[#edf3ff]",
+    fallbackImage: "/products/studio/studio-fan.jpg",
+    highlights: ["Trending Picks", "Useful Essentials", "Fast Delivery"]
+  }
 ];
 
-function toTitleParts(text?: string) {
-  const value = (text || "Risjas Picks").trim();
-  const parts = value.split(" ");
-  if (parts.length === 1) return { title: parts[0], subtitle: "Collection" };
-  return {
-    title: parts.slice(0, Math.ceil(parts.length / 2)).join(" "),
-    subtitle: parts.slice(Math.ceil(parts.length / 2)).join(" ")
-  };
+function normalize(value: string) {
+  return value.toLowerCase().trim().replace(/[\s&_-]+/g, " ");
 }
 
-function buildHeroSlides(banners: any[], featuredProducts: any[]): HeroSlide[] {
+function buildHeroSlides(categories: any[], products: any[], banners: any[]): HeroSlide[] {
   if (banners.length) {
-    return banners.slice(0, 4).map((banner, index) => {
-      const { title, subtitle } = toTitleParts(banner.title || banner.subtitle || "Risjas Picks");
+    return banners.map((banner) => {
+      const buttonLink = banner.buttonLink || "/products";
       return {
         id: banner.id,
         image: banner.imageUrl,
-        bg: heroBackgrounds[index % heroBackgrounds.length],
-        title,
-        subtitle,
-        label: banner.subtitle || "Fresh Collection",
+        bg: "from-[#fff3f7] via-white to-[#e9f1ff]",
+        title: banner.title || "RISJAS Collection",
+        subtitle: banner.subtitle || "",
+        label: banner.subtitle || "Featured Collection",
         buttonText: banner.buttonText || "Shop Now",
-        buttonLink: banner.buttonLink || "/products"
+        buttonLink,
+        fullImage: true
       };
     });
   }
 
-  return featuredProducts.slice(0, 4).map((product, index) => {
-    const { title, subtitle } = toTitleParts(product.name);
+  return heroCategoryConfigs.map((config) => {
+    const category = categories.find((item) => {
+      const categorySlug = normalize(item.slug || "");
+      const categoryName = normalize(item.name || "");
+      return config.match.some((token) => {
+        const match = normalize(token);
+        return categorySlug.includes(match) || categoryName.includes(match);
+      });
+    });
+
+    const product = category
+      ? products.find((item) => item.categoryId === category.id && item.images?.[0]?.imageUrl)
+      : undefined;
+
+    const buttonLink = category ? `/products?category=${encodeURIComponent(category.slug)}` : "/products";
     return {
-      id: product.id,
-      image: product.images?.[0]?.imageUrl || "/products/cute-panda.png",
-      bg: heroBackgrounds[index % heroBackgrounds.length],
-      title,
-      subtitle,
-      label: product.category?.name || "Trending",
-      priceText: `Rs. ${Number(product.price || 0).toFixed(0)}`,
-      discountText: `${Math.max(0, Number(product.discountPercent || 0))}% OFF`,
-      buttonText: "View Product",
-      buttonLink: `/product/${product.slug}`
+      id: config.id,
+      image: product?.images?.[0]?.imageUrl || config.fallbackImage,
+      bg: config.bg,
+      title: config.title,
+      subtitle: config.subtitle,
+      tabLabel: config.tabLabel,
+      label: config.label,
+      priceText: config.priceText,
+      buttonText: "Shop Now",
+      buttonLink,
+      highlights: config.highlights
     };
   });
 }
@@ -73,17 +184,25 @@ export default async function HomePage() {
     productService.list({ featured: true, sort: "newest" as any }),
     productService.list({ bestSeller: true, sort: "newest" as any }),
     productService.list({ sort: "newest" as any }),
-    prisma.banner.findMany({ where: { isActive: true }, orderBy: { createdAt: "desc" }, take: 4 })
+    prisma.banner.findMany({ where: { isActive: true }, orderBy: { createdAt: "desc" }, take: 8 })
   ]);
 
-  const heroSlides = buildHeroSlides(banners, featuredProducts.length ? featuredProducts : latestProducts);
+  const heroSlides = buildHeroSlides(categories, featuredProducts.length ? featuredProducts : latestProducts, banners);
   const topCollections = categories.slice(0, 12);
   const trendingProducts = (bestSellerProducts.length ? bestSellerProducts : latestProducts).slice(0, 10);
   const freshDrops = latestProducts.slice(0, 8);
+  const pageSchema = createWebPageSchema({
+    title: "Risjas Online Store | Trendy Gadgets & Lifestyle Picks",
+    description:
+      "Shop trendy gadgets, aesthetic decor, and daily-use essentials at Risjas with secure checkout, fast shipping, and reliable customer support across India.",
+    path: "/"
+  });
 
   return (
-    <div className="bg-[#FCFCFC] pb-16">
-      <HeroCarousel slides={heroSlides} />
+    <>
+      <SeoJsonLd id="home-page-schema" schema={pageSchema} />
+      <div className="bg-[#FCFCFC] pb-16">
+        <HeroCarousel slides={heroSlides} />
 
       <section className="container-page pt-16">
         <div className="rounded-3xl border border-slate-200 bg-white p-6 sm:p-8">
@@ -169,22 +288,23 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="container-page pt-16">
-        <div className="grid gap-5 sm:grid-cols-3">
-          <div className="rounded-3xl border border-slate-200 bg-white p-5 text-center">
-            <p className="text-lg font-semibold text-navy">Fast Delivery</p>
-            <p className="mt-1 text-sm text-slate-600">Quick dispatch on confirmed orders.</p>
+        <section className="container-page pt-16">
+          <div className="grid gap-5 sm:grid-cols-3">
+            <div className="rounded-3xl border border-slate-200 bg-white p-5 text-center">
+              <p className="text-lg font-semibold text-navy">Fast Delivery</p>
+              <p className="mt-1 text-sm text-slate-600">Quick dispatch on confirmed orders.</p>
+            </div>
+            <div className="rounded-3xl border border-slate-200 bg-white p-5 text-center">
+              <p className="text-lg font-semibold text-navy">Secure Checkout</p>
+              <p className="mt-1 text-sm text-slate-600">COD and Razorpay both supported.</p>
+            </div>
+            <div className="rounded-3xl border border-slate-200 bg-white p-5 text-center">
+              <p className="text-lg font-semibold text-navy">Real-time Inventory</p>
+              <p className="mt-1 text-sm text-slate-600">Stock updates from live orders and admin edits.</p>
+            </div>
           </div>
-          <div className="rounded-3xl border border-slate-200 bg-white p-5 text-center">
-            <p className="text-lg font-semibold text-navy">Secure Checkout</p>
-            <p className="mt-1 text-sm text-slate-600">COD and Razorpay both supported.</p>
-          </div>
-          <div className="rounded-3xl border border-slate-200 bg-white p-5 text-center">
-            <p className="text-lg font-semibold text-navy">Real-time Inventory</p>
-            <p className="mt-1 text-sm text-slate-600">Stock updates from live orders and admin edits.</p>
-          </div>
-        </div>
-      </section>
-    </div>
+        </section>
+      </div>
+    </>
   );
 }

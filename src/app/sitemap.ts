@@ -6,7 +6,16 @@ export const dynamic = "force-dynamic";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://risjas.com";
-  const products = await prisma.product.findMany({ select: { slug: true, updatedAt: true, isActive: true } });
+  const [products, categories] = await Promise.all([
+    prisma.product.findMany({
+      where: { isActive: true },
+      select: { slug: true, updatedAt: true }
+    }),
+    prisma.category.findMany({
+      where: { isActive: true },
+      select: { slug: true, updatedAt: true }
+    })
+  ]);
 
   const staticRoutes = [
     "",
@@ -16,8 +25,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/shipping-policy",
     "/return-refund-policy",
     "/privacy-policy",
-    "/terms-conditions",
-    "/track-order"
+    "/terms-conditions"
   ];
 
   const staticMap = staticRoutes.map((route) => ({
@@ -25,12 +33,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     lastModified: new Date()
   }));
 
-  const productMap = products
-    .filter((p) => p.isActive)
-    .map((product) => ({
+  const productMap = products.map((product) => ({
       url: `${siteUrl}/product/${product.slug}`,
       lastModified: product.updatedAt
     }));
 
-  return [...staticMap, ...productMap];
+  const categoryMap = categories.map((category) => ({
+    url: `${siteUrl}/products?category=${encodeURIComponent(category.slug)}`,
+    lastModified: category.updatedAt
+  }));
+
+  return [...staticMap, ...productMap, ...categoryMap];
 }

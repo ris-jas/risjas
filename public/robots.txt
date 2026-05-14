@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /admin/
+Disallow: /api
+Disallow: /api/
+Disallow: /cart
+Disallow: /checkout
+Disallow: /order-success
+Disallow: /track-order
+
+Sitemap: https://risjas.com/sitemap.xml

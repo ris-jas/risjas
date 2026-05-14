@@ -1,15 +1,22 @@
-﻿"use client";
+"use client";
 
 import { Clock, Mail, MessageCircle, Phone } from "lucide-react";
 import { useState } from "react";
 
 import Reveal from "@/components/common/Reveal";
+import SeoJsonLd from "@/components/common/SeoJsonLd";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { createWebPageSchema } from "@/lib/seo";
+
+const title = "Contact Risjas | Order Help, Support and WhatsApp Chat";
+const description =
+  "Contact Risjas for order support, delivery updates, return help, and product questions through email, phone, or WhatsApp with quick responses from our team.";
 
 export default function ContactPage() {
   const [status, setStatus] = useState("");
+  const pageSchema = createWebPageSchema({ title, description, path: "/contact", type: "ContactPage" });
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -22,6 +29,7 @@ export default function ContactPage() {
 
   return (
     <div className="container-page section-space">
+      <SeoJsonLd id="contact-page-schema" schema={pageSchema} />
       <Reveal className="mx-auto max-w-4xl text-center">
         <p className="text-xs font-semibold uppercase tracking-[0.24em] text-navy/75">Contact RISJAS</p>
         <h1 className="mt-3 text-4xl font-bold text-navy sm:text-5xl">We Are Here To Help</h1>

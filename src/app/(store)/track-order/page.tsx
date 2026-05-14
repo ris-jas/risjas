@@ -1,11 +1,13 @@
-﻿"use client";
+"use client";
 
-import { useMemo, useState } from "react";
 import { Bike, Home, MapPin, Package, PackageCheck, Truck } from "lucide-react";
+import { useMemo, useState } from "react";
 
 import Reveal from "@/components/common/Reveal";
+import SeoJsonLd from "@/components/common/SeoJsonLd";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { createWebPageSchema } from "@/lib/seo";
 
 const ORDER_FLOW = [
   { key: "PENDING", label: "Pending", icon: Package },
@@ -16,11 +18,16 @@ const ORDER_FLOW = [
   { key: "DELIVERED", label: "Delivered", icon: Home }
 ];
 
+const title = "Track Order | Risjas Live Delivery and Status Updates";
+const description =
+  "Track your Risjas order with order ID and phone number to get live status updates, delivery progress, item details, and support information in one place.";
+
 export default function TrackOrderPage() {
   const [orderId, setOrderId] = useState("");
   const [phone, setPhone] = useState("");
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState("");
+  const pageSchema = createWebPageSchema({ title, description, path: "/track-order" });
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,6 +49,7 @@ export default function TrackOrderPage() {
 
   return (
     <div className="container-page section-space">
+      <SeoJsonLd id="track-order-page-schema" schema={pageSchema} />
       <Reveal className="mx-auto max-w-4xl text-center">
         <h1 className="text-4xl font-bold text-navy sm:text-5xl">Track Your Order</h1>
         <p className="mt-3 text-base font-light text-slate-500">Enter order ID and phone number for live updates.</p>
