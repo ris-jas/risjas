@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 
 type ProductActionsProps = {
   productId: string;
-  variant?: "default" | "cardHover";
+  variant?: "default" | "cardHover" | "cardInline";
   className?: string;
 };
 
@@ -52,6 +52,20 @@ export default function ProductActions({ productId, variant = "default", classNa
       >
         {loading ? <Loader2 className="mx-auto h-4 w-4 animate-spin" /> : "Add to Cart"}
       </button>
+    );
+  }
+
+  if (variant === "cardInline") {
+    return (
+      <Button
+        type="button"
+        className={`h-11 w-full rounded-full bg-navy text-sm font-semibold text-white transition duration-300 hover:bg-red ${className}`}
+        onClick={addToCart}
+        disabled={loading}
+        aria-label="Add to cart"
+      >
+        {loading ? "Adding..." : "Add to Cart"}
+      </Button>
     );
   }
 

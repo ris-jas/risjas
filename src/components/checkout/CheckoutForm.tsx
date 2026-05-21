@@ -49,6 +49,12 @@ export default function CheckoutForm() {
 
       const result = await response.json();
 
+      if (response.status === 401) {
+        setLoading(false);
+        router.push("/profile?next=/checkout");
+        return;
+      }
+
       if (!result.success) {
         setError(result.message);
         setLoading(false);

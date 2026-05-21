@@ -8,7 +8,7 @@ const links = [
   { href: "/", label: "Home", icon: Home },
   { href: "/products", label: "Shop", icon: ShoppingBag },
   { href: "/cart", label: "Cart", icon: ShoppingCart },
-  { href: "/track-order", label: "Profile", icon: UserRound }
+  { href: "/profile", label: "Profile", icon: UserRound }
 ];
 
 export default function MobileNav() {

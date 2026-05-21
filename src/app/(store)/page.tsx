@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { ArrowUpRight, Sparkles } from "lucide-react";
+import { Gift, Home, LampDesk, PackageSearch, Snowflake, Sparkle, UtensilsCrossed, Wine, Wrench } from "lucide-react";
 
 import SeoJsonLd from "@/components/common/SeoJsonLd";
 import HeroCarousel, { HeroSlide } from "@/components/home/HeroCarousel";
 import ProductCard from "@/components/product/ProductCard";
-import { prisma } from "@/lib/prisma";
 import { createPageMetadata, createWebPageSchema } from "@/lib/seo";
 import { categoryService } from "@/services/category.service";
 import { productService } from "@/services/product.service";
@@ -19,11 +20,18 @@ export const metadata: Metadata = createPageMetadata({
 });
 
 const dealRanges = [
-  { label: "Under Rs. 199", min: 0, max: 199 },
-  { label: "Under Rs. 499", min: 0, max: 499 },
-  { label: "Under Rs. 999", min: 0, max: 999 },
-  { label: "Rs. 1000 - 1999", min: 1000, max: 1999 },
-  { label: "Above Rs. 2000", min: 2000 }
+  { label: "Under ₹199", min: 0, max: 199 },
+  { label: "Under ₹499", min: 0, max: 499 },
+  { label: "Under ₹999", min: 0, max: 999 },
+  { label: "₹1000 - ₹1999", min: 1000, max: 1999 },
+  { label: "Above ₹2000", min: 2000 }
+];
+
+const collectionAccents = [
+  "from-[#fff3f8] via-[#fffdfd] to-[#edf4ff] border-[#f2d9e6] hover:border-[#d89bb6]",
+  "from-[#eef5ff] via-[#fcfeff] to-[#fff4f9] border-[#dae6f7] hover:border-[#9cb4d6]",
+  "from-[#fff7ef] via-[#fffefe] to-[#f1f6ff] border-[#f3dfcc] hover:border-[#d8b18d]",
+  "from-[#f4fff7] via-[#fdfefe] to-[#f2f5ff] border-[#dbeede] hover:border-[#9dc8ac]"
 ];
 
 const heroCategoryConfigs = [
@@ -34,9 +42,10 @@ const heroCategoryConfigs = [
     title: "Aesthetic Decor",
     subtitle: "Fresh Stylish Picks",
     label: "Curated Home Styling Picks",
-    priceText: "Rs. 199",
+    priceText: "₹199",
     bg: "from-[#fff2f7] via-white to-[#eaf2ff]",
-    fallbackImage: "/products/studio/studio-lamp.jpg",
+    fallbackImage: "/hero/optimized/aesthetic-decor.png",
+    overlayClass: "from-[#1a2f63]/66 via-[#1a2f63]/34 to-[#1a2f63]/10",
     highlights: ["Premium Quality", "Fast Delivery", "Trending Finds"]
   },
   {
@@ -46,9 +55,10 @@ const heroCategoryConfigs = [
     title: "Best Sellers",
     subtitle: "Top Trending Products",
     label: "Most Loved Customer Picks",
-    priceText: "Rs. 99",
+    priceText: "₹99",
     bg: "from-[#fff4fa] via-white to-[#e9f1ff]",
-    fallbackImage: "/products/cute-panda.png",
+    fallbackImage: "/hero/optimized/best-sellers.png",
+    overlayClass: "from-[#3b2448]/58 via-[#3b2448]/28 to-transparent",
     highlights: ["Top Rated", "Quick Delivery", "Trusted Quality"]
   },
   {
@@ -58,9 +68,10 @@ const heroCategoryConfigs = [
     title: "Cooling Gadgets",
     subtitle: "Beat The Heat",
     label: "Stay Cool With Smart Essentials",
-    priceText: "Rs. 149",
+    priceText: "₹149",
     bg: "from-[#e9f4ff] via-white to-[#f2f8ff]",
-    fallbackImage: "/products/portable-mini-air.png",
+    fallbackImage: "/hero/optimized/cooling-gadgets.png",
+    overlayClass: "from-[#11365f]/60 via-[#11365f]/30 to-transparent",
     highlights: ["Portable Design", "Summer Ready", "Quick Delivery"]
   },
   {
@@ -70,9 +81,10 @@ const heroCategoryConfigs = [
     title: "Cute Gifts",
     subtitle: "Sweet Little Surprises",
     label: "Charming Picks For Every Occasion",
-    priceText: "Rs. 99",
+    priceText: "₹99",
     bg: "from-[#fff0f5] via-white to-[#f6f1ff]",
-    fallbackImage: "/products/panda-trending-banner.png",
+    fallbackImage: "/hero/optimized/cute-gifts.png",
+    overlayClass: "from-[#4e1f4a]/58 via-[#4e1f4a]/26 to-transparent",
     highlights: ["Gift Ready", "Budget Friendly", "Fast Shipping"]
   },
   {
@@ -82,9 +94,10 @@ const heroCategoryConfigs = [
     title: "Drinkware",
     subtitle: "Hydrate In Style",
     label: "Sip In Style Every Day",
-    priceText: "Rs. 129",
+    priceText: "₹129",
     bg: "from-[#eef5ff] via-white to-[#f2f9ff]",
-    fallbackImage: "/products/studio/studio-bottle.jpg",
+    fallbackImage: "/hero/optimized/drinkware.png",
+    overlayClass: "from-[#123761]/62 via-[#123761]/32 to-transparent",
     highlights: ["Leak Proof", "Trendy Styles", "Daily Essentials"]
   },
   {
@@ -94,9 +107,10 @@ const heroCategoryConfigs = [
     title: "Kitchen & Dining",
     subtitle: "Cook Serve Enjoy",
     label: "Modern Essentials For Every Meal",
-    priceText: "Rs. 249",
+    priceText: "₹249",
     bg: "from-[#fff6f0] via-white to-[#eef4ff]",
-    fallbackImage: "/products/flask-400ml.png",
+    fallbackImage: "/hero/optimized/kitchen-dining.png",
+    overlayClass: "from-[#3f2a1d]/58 via-[#3f2a1d]/24 to-transparent",
     highlights: ["Everyday Utility", "Premium Finish", "Customer Favorites"]
   },
   {
@@ -106,9 +120,10 @@ const heroCategoryConfigs = [
     title: "Kitchen Tools",
     subtitle: "Chop Mix Prep",
     label: "Smart Tools For Easy Cooking",
-    priceText: "Rs. 99",
+    priceText: "₹99",
     bg: "from-[#fff7f2] via-white to-[#edf3ff]",
-    fallbackImage: "/products/panda-usb-charging.png",
+    fallbackImage: "/hero/optimized/kitchen-tools.png",
+    overlayClass: "from-[#3f321f]/54 via-[#3f321f]/20 to-transparent",
     highlights: ["Easy To Use", "Daily Utility", "Best Value"]
   },
   {
@@ -118,9 +133,10 @@ const heroCategoryConfigs = [
     title: "Lifestyle",
     subtitle: "Upgrade Everyday Living",
     label: "Daily Essentials With A Smart Twist",
-    priceText: "Rs. 199",
+    priceText: "₹199",
     bg: "from-[#fff5ef] via-white to-[#edf3ff]",
-    fallbackImage: "/products/studio/studio-fan.jpg",
+    fallbackImage: "/hero/optimized/lifestyle.png",
+    overlayClass: "from-[#1f3150]/58 via-[#1f3150]/28 to-transparent",
     highlights: ["Trending Picks", "Useful Essentials", "Fast Delivery"]
   }
 ];
@@ -129,24 +145,20 @@ function normalize(value: string) {
   return value.toLowerCase().trim().replace(/[\s&_-]+/g, " ");
 }
 
-function buildHeroSlides(categories: any[], products: any[], banners: any[]): HeroSlide[] {
-  if (banners.length) {
-    return banners.map((banner) => {
-      const buttonLink = banner.buttonLink || "/products";
-      return {
-        id: banner.id,
-        image: banner.imageUrl,
-        bg: "from-[#fff3f7] via-white to-[#e9f1ff]",
-        title: banner.title || "RISJAS Collection",
-        subtitle: banner.subtitle || "",
-        label: banner.subtitle || "Featured Collection",
-        buttonText: banner.buttonText || "Shop Now",
-        buttonLink,
-        fullImage: true
-      };
-    });
-  }
+function getCollectionIcon(slug: string) {
+  const key = slug.toLowerCase();
+  if (key.includes("decor")) return LampDesk;
+  if (key.includes("gift")) return Gift;
+  if (key.includes("kitchen") && key.includes("tool")) return Wrench;
+  if (key.includes("kitchen") || key.includes("dining")) return UtensilsCrossed;
+  if (key.includes("cool")) return Snowflake;
+  if (key.includes("drink")) return Wine;
+  if (key.includes("lifestyle")) return Home;
+  if (key.includes("best")) return Sparkle;
+  return PackageSearch;
+}
 
+function buildHeroSlides(categories: any[]) {
   return heroCategoryConfigs.map((config) => {
     const category = categories.find((item) => {
       const categorySlug = normalize(item.slug || "");
@@ -157,14 +169,12 @@ function buildHeroSlides(categories: any[], products: any[], banners: any[]): He
       });
     });
 
-    const product = category
-      ? products.find((item) => item.categoryId === category.id && item.images?.[0]?.imageUrl)
-      : undefined;
-
-    const buttonLink = category ? `/products?category=${encodeURIComponent(category.slug)}` : "/products";
+    const buttonLink = category
+      ? `/products?category=${encodeURIComponent(category.slug)}`
+      : `/products?category=${encodeURIComponent(config.id)}`;
     return {
       id: config.id,
-      image: product?.images?.[0]?.imageUrl || config.fallbackImage,
+      image: config.fallbackImage,
       bg: config.bg,
       title: config.title,
       subtitle: config.subtitle,
@@ -173,21 +183,21 @@ function buildHeroSlides(categories: any[], products: any[], banners: any[]): He
       priceText: config.priceText,
       buttonText: "Shop Now",
       buttonLink,
-      highlights: config.highlights
+      highlights: config.highlights,
+      overlayClass: config.overlayClass,
+      fullImage: true
     };
   });
 }
 
 export default async function HomePage() {
-  const [categories, featuredProducts, bestSellerProducts, latestProducts, banners] = await Promise.all([
+  const [categories, bestSellerProducts, latestProducts] = await Promise.all([
     categoryService.listActive(),
-    productService.list({ featured: true, sort: "newest" as any }),
     productService.list({ bestSeller: true, sort: "newest" as any }),
-    productService.list({ sort: "newest" as any }),
-    prisma.banner.findMany({ where: { isActive: true }, orderBy: { createdAt: "desc" }, take: 8 })
+    productService.list({ sort: "newest" as any })
   ]);
 
-  const heroSlides = buildHeroSlides(categories, featuredProducts.length ? featuredProducts : latestProducts, banners);
+  const heroSlides = buildHeroSlides(categories);
   const topCollections = categories.slice(0, 12);
   const trendingProducts = (bestSellerProducts.length ? bestSellerProducts : latestProducts).slice(0, 10);
   const freshDrops = latestProducts.slice(0, 8);
@@ -204,28 +214,51 @@ export default async function HomePage() {
       <div className="bg-[#FCFCFC] pb-16">
         <HeroCarousel slides={heroSlides} />
 
-      <section className="container-page pt-16">
-        <div className="rounded-3xl border border-slate-200 bg-white p-6 sm:p-8">
-          <div className="flex flex-wrap items-end justify-between gap-4">
+      <section id="top-collections" className="container-page pt-16">
+        <div className="relative overflow-hidden rounded-[2rem] border border-[#e3e8f3] bg-white p-6 shadow-[0_8px_30px_rgba(15,32,67,0.06)] sm:p-8">
+          <div className="pointer-events-none absolute -right-24 -top-16 h-56 w-56 rounded-full bg-[#e8f0ff] blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-20 -left-16 h-52 w-52 rounded-full bg-[#ffe9f2] blur-3xl" />
+
+          <div className="relative flex flex-wrap items-end justify-between gap-4">
             <div>
-              <h2 className="text-4xl sm:text-5xl font-bold text-navy">Top Collections</h2>
-              <p className="mt-2 text-slate-600">Shop by your live category catalog.</p>
+              <p className="inline-flex items-center gap-1.5 rounded-full border border-[#f0d6e1] bg-[#fff4f8] px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-[#9e5b72]">
+                <Sparkles className="h-3.5 w-3.5" />
+                Curated Picks
+              </p>
+              <h2 className="mt-3 text-4xl font-bold leading-tight text-navy sm:text-5xl">Top Collections</h2>
+              <p className="mt-2 max-w-xl text-slate-600">Discover trending categories crafted for daily utility, gifting, and lifestyle upgrades.</p>
             </div>
-            <Link href="/products" className="rounded-full bg-navy px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-red">
+            <Link
+              href="/products"
+              className="group inline-flex items-center gap-2 rounded-full border border-navy bg-navy px-6 py-2.5 text-sm font-semibold text-white transition-all duration-300 hover:-translate-y-0.5 hover:bg-red hover:border-red"
+            >
               View All
+              <ArrowUpRight className="h-4 w-4 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
             </Link>
           </div>
 
-          <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-            {topCollections.map((category) => (
-              <Link
-                key={category.id}
-                href={`/products?category=${encodeURIComponent(category.slug)}`}
-                className="group rounded-2xl border border-slate-200 bg-gradient-to-br from-white to-[#f8fbff] p-4 transition duration-300 hover:-translate-y-1 hover:border-blue-200 hover:shadow-md"
-              >
-                <p className="text-sm font-semibold text-navy group-hover:text-red line-clamp-2">{category.name}</p>
-                <p className="mt-1 text-xs text-slate-500">/{category.slug}</p>
-              </Link>
+          <div className="relative mt-7 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {topCollections.map((category, index) => (
+              (() => {
+                const Icon = getCollectionIcon(category.slug);
+                return (
+                  <Link
+                    key={category.id}
+                    href={`/products?category=${encodeURIComponent(category.slug)}`}
+                    className={`group relative min-h-[146px] overflow-hidden rounded-2xl border bg-gradient-to-br p-4 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_24px_rgba(21,41,74,0.12)] ${collectionAccents[index % collectionAccents.length]}`}
+                  >
+                    <div className="pointer-events-none absolute -right-8 -top-8 h-20 w-20 rounded-full bg-white/50 blur-xl transition-all duration-300 group-hover:scale-125" />
+                    <div className="relative inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/70 bg-white/65 text-navy shadow-sm">
+                      <Icon className="h-[18px] w-[18px]" />
+                    </div>
+                    <p className="relative mt-3 text-base font-semibold text-navy transition-colors duration-300 group-hover:text-red line-clamp-2">{category.name}</p>
+                    <div className="relative mt-4 inline-flex items-center gap-1 text-xs font-semibold text-navy/75 transition-all duration-300 group-hover:text-navy">
+                      Explore
+                      <ArrowUpRight className="h-3.5 w-3.5 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+                    </div>
+                  </Link>
+                );
+              })()
             ))}
           </div>
         </div>
@@ -252,7 +285,7 @@ export default async function HomePage() {
         <div className="flex items-end justify-between gap-4">
           <div>
             <h2 className="text-4xl sm:text-5xl font-bold text-navy">Trending Now</h2>
-            <p className="mt-2 text-slate-600">Dynamic picks based on your live product data.</p>
+            <p className="mt-2 text-slate-600">Popular picks loved by shoppers.</p>
           </div>
           <Link href="/products" className="text-sm font-semibold text-navy hover:text-red transition">Browse All</Link>
         </div>
@@ -275,7 +308,7 @@ export default async function HomePage() {
           <div className="flex items-end justify-between gap-4">
             <div>
               <h2 className="text-3xl sm:text-4xl font-bold text-navy">New Drops</h2>
-              <p className="mt-2 text-slate-600">Latest products added from your admin panel.</p>
+              <p className="mt-2 text-slate-600">Fresh arrivals just added to our store.</p>
             </div>
             <Link href="/products?sort=newest" className="text-sm font-semibold text-navy hover:text-red transition">See Newest</Link>
           </div>
@@ -289,18 +322,22 @@ export default async function HomePage() {
       </section>
 
         <section className="container-page pt-16">
-          <div className="grid gap-5 sm:grid-cols-3">
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             <div className="rounded-3xl border border-slate-200 bg-white p-5 text-center">
-              <p className="text-lg font-semibold text-navy">Fast Delivery</p>
-              <p className="mt-1 text-sm text-slate-600">Quick dispatch on confirmed orders.</p>
+              <p className="text-lg font-semibold text-navy">Fast Dispatch</p>
+              <p className="mt-1 text-sm text-slate-600">Quick shipping on confirmed orders.</p>
             </div>
             <div className="rounded-3xl border border-slate-200 bg-white p-5 text-center">
-              <p className="text-lg font-semibold text-navy">Secure Checkout</p>
-              <p className="mt-1 text-sm text-slate-600">COD and Razorpay both supported.</p>
+              <p className="text-lg font-semibold text-navy">Secure Payments</p>
+              <p className="mt-1 text-sm text-slate-600">Trusted checkout with safe payment options.</p>
             </div>
             <div className="rounded-3xl border border-slate-200 bg-white p-5 text-center">
-              <p className="text-lg font-semibold text-navy">Real-time Inventory</p>
-              <p className="mt-1 text-sm text-slate-600">Stock updates from live orders and admin edits.</p>
+              <p className="text-lg font-semibold text-navy">COD Available</p>
+              <p className="mt-1 text-sm text-slate-600">Cash on Delivery for added convenience.</p>
+            </div>
+            <div className="rounded-3xl border border-slate-200 bg-white p-5 text-center">
+              <p className="text-lg font-semibold text-navy">Easy Returns</p>
+              <p className="mt-1 text-sm text-slate-600">Simple support for return and replacement requests.</p>
             </div>
           </div>
         </section>

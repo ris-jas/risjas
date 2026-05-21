@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1200" viewBox="0 0 1200 1200" role="img" aria-labelledby="title desc">
+  <title id="title">Rechargeable Portable Juicer</title>
+  <desc id="desc">Placeholder product image for rechargeable portable juicer</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f8fafc"/>
+      <stop offset="100%" stop-color="#e2e8f0"/>
+    </linearGradient>
+    <linearGradient id="body" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="1200" fill="url(#bg)"/>
+  <g transform="translate(370 220)">
+    <rect x="115" y="0" width="230" height="95" rx="36" fill="#0f172a"/>
+    <rect x="40" y="84" width="380" height="585" rx="120" fill="url(#body)"/>
+    <rect x="88" y="146" width="284" height="364" rx="82" fill="#e0f2fe" opacity="0.92"/>
+    <circle cx="230" cy="333" r="70" fill="#38bdf8" opacity="0.45"/>
+    <rect x="130" y="560" width="200" height="45" rx="22" fill="#f8fafc" opacity="0.9"/>
+  </g>
+  <text x="600" y="980" text-anchor="middle" font-size="56" font-family="Arial, sans-serif" fill="#0f172a" font-weight="700">Rechargeable Portable Juicer</text>
+</svg>

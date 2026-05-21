@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 
 import EmptyState from "@/components/common/EmptyState";
-import Reveal from "@/components/common/Reveal";
 import SeoJsonLd from "@/components/common/SeoJsonLd";
 import ProductCard from "@/components/product/ProductCard";
 import ProductFilters from "@/components/product/ProductFilters";
@@ -39,11 +38,9 @@ export default async function ProductsPage({ searchParams }: { searchParams: Rec
       <SeoJsonLd id="products-page-schema" schema={pageSchema} />
       <div className="container-page section-space">
         <div className="grid gap-6 lg:grid-cols-[300px_1fr]">
-          <Reveal>
-            <ProductFilters categories={categories} />
-          </Reveal>
+          <ProductFilters categories={categories} />
 
-          <Reveal>
+          <div>
             <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-[28px] bg-white p-4 shadow-soft">
               <h1 className="text-4xl sm:text-5xl">Products</h1>
               <div className="flex items-center gap-3">
@@ -61,7 +58,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Rec
             ) : (
               <EmptyState title="No products found" description="Try adjusting filters or search." />
             )}
-          </Reveal>
+          </div>
         </div>
       </div>
     </>

@@ -20,6 +20,9 @@ export async function POST(request: NextRequest) {
   try {
     const payload = await request.json();
     const user = await getSessionUser();
+    if (!user?.id) {
+      return errorResponse("Please login to continue checkout", {}, 401);
+    }
     const data = await orderController.checkout(sessionIdFromCookie(), payload, user?.id);
     return successResponse("Order placed successfully", data);
   } catch (error: any) {

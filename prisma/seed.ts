@@ -57,6 +57,8 @@ async function main() {
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-+|-+$/g, "");
 
+  const productImage = (slug: string) => [`/products/generated/${slug}.png`];
+
   const dynamicCatalog: Record<string, string[]> = {
     "new-drops": [
       "Galaxy Astronaut Projector",
@@ -169,7 +171,7 @@ async function main() {
       isFeatured: true,
       isBestSeller: true,
       categorySlug: "cooling-gadgets",
-      images: ["/products/portable-mini-air.png"]
+      images: productImage("mini-mist-fan-cooler")
     },
     {
       name: "Cute Panda Night Lamp (Multicolor)",
@@ -185,7 +187,7 @@ async function main() {
       isFeatured: true,
       isBestSeller: true,
       categorySlug: "cute-gifts",
-      images: ["/products/cute-panda.png", "/products/panda-usb-charging.png", "/products/panda-trending-banner.png"]
+      images: productImage("cute-panda-night-lamp")
     },
     {
       name: "Rechargeable Portable Juicer",
@@ -201,7 +203,7 @@ async function main() {
       isFeatured: true,
       isBestSeller: true,
       categorySlug: "kitchen-tools",
-      images: ["/products/rechargeable-juicer.svg"]
+      images: productImage("rechargeable-portable-juicer")
     },
     {
       name: "Premium Vacuum Flask Bottle",
@@ -217,7 +219,7 @@ async function main() {
       isFeatured: true,
       isBestSeller: true,
       categorySlug: "drinkware",
-      images: ["/products/flask-400ml.png"]
+      images: productImage("premium-vacuum-flask-bottle")
     }
   ];
 
@@ -249,7 +251,7 @@ async function main() {
         isFeatured: categorySlug === "new-drops" || categorySlug === "trending-now",
         isBestSeller: categorySlug === "best-sellers",
         categorySlug,
-        images: ["/products/cute-panda.png"]
+        images: productImage(slug)
       };
     });
   });
