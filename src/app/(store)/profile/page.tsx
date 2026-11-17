@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, CheckCircle2, KeyRound, Mail, ShieldCheck, Sparkles } from "lucide-react";
-import { useState } from "react";
-import { signIn } from "next-auth/react";
+import { ArrowRight, CheckCircle2, KeyRound, LogOut, Mail, ShieldCheck, ShoppingBag, Sparkles, UserRound } from "lucide-react";
+import { useEffect, useState } from "react";
+import { signIn, signOut } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import Reveal from "@/components/common/Reveal";
@@ -15,6 +15,13 @@ import { createWebPageSchema } from "@/lib/seo";
 const title = "Profile Login | Risjas";
 const description = "Login to your Risjas account.";
 
+type AuthUser = {
+  id?: string;
+  name?: string | null;
+  email?: string | null;
+  role?: string;
+};
+
 export default function ProfilePage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -22,8 +29,27 @@ export default function ProfilePage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [sessionLoading, setSessionLoading] = useState(true);
+  const [authUser, setAuthUser] = useState<AuthUser | null>(null);
+  const [showAccountDetails, setShowAccountDetails] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    const loadSession = async () => {
+      try {
+        const response = await fetch("/api/auth/session", { cache: "no-store" });
+        const session = await response.json();
+        setAuthUser(session?.user || null);
+      } catch {
+        setAuthUser(null);
+      } finally {
+        setSessionLoading(false);
+      }
+    };
+
+    loadSession();
+  }, []);
 
   const pageSchema = createWebPageSchema({ title, description, path: "/profile" });
 
@@ -50,6 +76,10 @@ export default function ProfilePage() {
         return;
       }
 
+      window.dispatchEvent(new Event("risjas:auth-updated"));
+      const sessionResponse = await fetch("/api/auth/session", { cache: "no-store" });
+      const session = await sessionResponse.json();
+      setAuthUser(session?.user || null);
       setMessage("Login successful. Redirecting...");
       router.push(redirectPath);
       router.refresh();
@@ -127,41 +157,99 @@ export default function ProfilePage() {
           <div className="absolute -right-10 top-0 h-32 w-32 rounded-full bg-red-soft/80 blur-2xl animate-float" />
           <div className="absolute -left-8 bottom-0 h-28 w-28 rounded-full bg-blue-100/70 blur-2xl animate-float" />
 
-          <form className="relative" onSubmit={onSubmit}>
-            <div className="mb-5">
-              <h3 className="text-2xl font-bold text-navy">Login</h3>
-            </div>
-
-            <div className="mt-5 space-y-3">
-              <div className="relative">
-                <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                <Input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email Address" className="h-12 rounded-2xl border border-red/20 bg-white pl-10 transition-all duration-300 focus:shadow-[0_0_0_3px_rgba(217,138,129,0.22)]" />
+          {sessionLoading ? (
+            <div className="relative flex min-h-[390px] items-center justify-center text-sm text-slate-500">Loading your profile...</div>
+          ) : authUser ? (
+            <div className="relative">
+              <div className="mb-6 flex items-center gap-4">
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-navy text-xl font-black text-white">
+                  {(authUser.name || authUser.email || "U").split(/\s+/).map((part) => part[0]).slice(0, 2).join("").toUpperCase()}
+                </div>
+                <div>
+                  <p className="text-sm text-slate-500">Welcome back</p>
+                  <h3 className="text-2xl font-bold text-navy">{authUser.name || "Risjas Customer"}</h3>
+                  <p className="text-sm text-slate-500">{authUser.email}</p>
+                </div>
               </div>
 
-              <Input value={password} onChange={(e) => setPassword(e.target.value)} type="password" placeholder="Password" className="h-12 rounded-2xl border border-red/20 bg-white transition-all duration-300 focus:shadow-[0_0_0_3px_rgba(217,138,129,0.22)]" />
-            </div>
-
-            <Button type="submit" className="mt-5 h-12 w-full border-0 bg-gradient-to-r from-navy via-navy to-red text-white transition-all duration-300 hover:scale-[1.01] hover:opacity-95 hover:shadow-[0_12px_28px_rgba(26,45,75,0.28)]" disabled={loading || !canLoginSubmit}>
-              {loading ? "Please wait..." : "Login"}
-            </Button>
-
-            <p className="mt-3 text-xs text-slate-500">Login with your registered details.</p>
-
-            {error ? <div className="mt-4 rounded-2xl border border-red/30 bg-red-soft px-4 py-3 text-sm font-medium text-navy">{error}</div> : null}
-
-            {message ? (
-              <div className="mt-4 flex items-start gap-2 rounded-2xl border border-navy/15 bg-blue-50 px-4 py-3 text-sm font-medium text-navy">
-                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
-                <span>{message}</span>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <Link href="/track-order" className="flex items-center gap-3 rounded-2xl border border-red/20 bg-red-soft/40 p-4 text-sm font-semibold text-navy transition-colors hover:bg-red-soft">
+                  <ShoppingBag className="h-5 w-5 text-red" />
+                  Your Orders
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => setShowAccountDetails((current) => !current)}
+                  aria-expanded={showAccountDetails}
+                  className={`flex items-center gap-3 rounded-2xl border p-4 text-left text-sm font-semibold text-navy transition-all ${showAccountDetails ? "border-red/40 bg-red-soft/40 shadow-sm" : "border-slate-200 bg-slate-50 hover:border-red/30 hover:bg-red-soft/20"}`}
+                >
+                  <UserRound className="h-5 w-5 text-red" />
+                  Account details
+                </button>
               </div>
-            ) : null}
 
-            <div className="mt-4 flex justify-end">
-              <Link href="/profile/signup" className="text-sm font-semibold text-navy underline underline-offset-4 transition-colors duration-200 hover:text-red">
-                New here? Sign up
-              </Link>
+              {showAccountDetails ? (
+                <div className="mt-4 rounded-2xl border border-red/20 bg-white p-4 shadow-sm">
+                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-red">Account details</p>
+                  <div className="mt-3 grid gap-3 text-sm sm:grid-cols-2">
+                    <div>
+                      <p className="text-slate-500">Name</p>
+                      <p className="font-semibold text-navy">{authUser.name || "Not available"}</p>
+                    </div>
+                    <div>
+                      <p className="text-slate-500">Email</p>
+                      <p className="break-all font-semibold text-navy">{authUser.email || "Not available"}</p>
+                    </div>
+                    <div>
+                      <p className="text-slate-500">Account type</p>
+                      <p className="font-semibold capitalize text-navy">{(authUser.role || "customer").toLowerCase()}</p>
+                    </div>
+                  </div>
+                </div>
+              ) : null}
+
+              <button type="button" onClick={() => signOut({ callbackUrl: "/profile" })} className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-navy underline underline-offset-4 transition-colors hover:text-red">
+                <LogOut className="h-4 w-4" />
+                Logout
+              </button>
             </div>
-          </form>
+          ) : (
+            <form className="relative" onSubmit={onSubmit}>
+              <div className="mb-5">
+                <h3 className="text-2xl font-bold text-navy">Login</h3>
+              </div>
+
+              <div className="mt-5 space-y-3">
+                <div className="relative">
+                  <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                  <Input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email Address" className="h-12 rounded-2xl border border-red/20 bg-white pl-10 transition-all duration-300 focus:shadow-[0_0_0_3px_rgba(217,138,129,0.22)]" />
+                </div>
+
+                <Input value={password} onChange={(e) => setPassword(e.target.value)} type="password" placeholder="Password" className="h-12 rounded-2xl border border-red/20 bg-white transition-all duration-300 focus:shadow-[0_0_0_3px_rgba(217,138,129,0.22)]" />
+              </div>
+
+              <Button type="submit" className="mt-5 h-12 w-full border-0 bg-gradient-to-r from-navy via-navy to-red text-white transition-all duration-300 hover:scale-[1.01] hover:opacity-95 hover:shadow-[0_12px_28px_rgba(26,45,75,0.28)]" disabled={loading || !canLoginSubmit}>
+                {loading ? "Please wait..." : "Login"}
+              </Button>
+
+              <p className="mt-3 text-xs text-slate-500">Login with your registered details.</p>
+
+              {error ? <div className="mt-4 rounded-2xl border border-red/30 bg-red-soft px-4 py-3 text-sm font-medium text-navy">{error}</div> : null}
+
+              {message ? (
+                <div className="mt-4 flex items-start gap-2 rounded-2xl border border-navy/15 bg-blue-50 px-4 py-3 text-sm font-medium text-navy">
+                  <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
+                  <span>{message}</span>
+                </div>
+              ) : null}
+
+              <div className="mt-4 flex justify-end">
+                <Link href="/profile/signup" className="text-sm font-semibold text-navy underline underline-offset-4 transition-colors duration-200 hover:text-red">
+                  New here? Sign up
+                </Link>
+              </div>
+            </form>
+          )}
         </Reveal>
       </div>
     </div>

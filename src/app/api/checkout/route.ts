@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
     if (!user?.id) {
       return errorResponse("Please login to continue checkout", {}, 401);
     }
-    const data = await orderController.checkout(sessionIdFromCookie(), payload, user?.id);
+    const data = await orderController.checkout(sessionIdFromCookie(), { ...payload, email: payload.email || user.email || "" }, user.id);
     return successResponse("Order placed successfully", data);
   } catch (error: any) {
     return errorResponse(error.message || "Checkout failed", {}, 400);

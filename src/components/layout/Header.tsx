@@ -13,6 +13,17 @@ type HeaderCategory = {
   slug: string;
 };
 
+function getUserInitials(name?: string | null, email?: string | null) {
+  const value = name?.trim() || email?.split("@")[0] || "U";
+  const parts = value.split(/\s+/).filter(Boolean);
+
+  if (parts.length > 1) {
+    return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+  }
+
+  return value.slice(0, 2).toUpperCase();
+}
+
 export default function Header({ categories = [] }: { categories?: HeaderCategory[] }) {
   const router = useRouter();
   const [isScrolled, setIsScrolled] = useState(false);
@@ -43,7 +54,11 @@ export default function Header({ categories = [] }: { categories?: HeaderCategor
 
     loadSession();
     window.addEventListener("focus", loadSession);
-    return () => window.removeEventListener("focus", loadSession);
+    window.addEventListener("risjas:auth-updated", loadSession);
+    return () => {
+      window.removeEventListener("focus", loadSession);
+      window.removeEventListener("risjas:auth-updated", loadSession);
+    };
   }, []);
 
   useEffect(() => {
@@ -69,6 +84,7 @@ export default function Header({ categories = [] }: { categories?: HeaderCategor
 
   const navItems = categories.slice(0, 8);
   const isAuthenticated = Boolean(authUser?.email);
+  const userInitials = getUserInitials(authUser?.name, authUser?.email);
 
   const runSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -130,7 +146,9 @@ export default function Header({ categories = [] }: { categories?: HeaderCategor
           {isAuthenticated ? (
             <Link href="/profile" className="hidden sm:flex flex-col items-center gap-1.5 hover:text-red transition-colors group">
               <div className="relative p-2.5 bg-slate-50 rounded-full group-hover:bg-red group-hover:text-white transition-all duration-300 border border-slate-100">
-                <UserRound className="h-4 w-4" />
+                <span className="flex h-4 w-4 items-center justify-center text-[11px] font-black leading-none">
+                  {userInitials}
+                </span>
               </div>
               <span className="text-[11px] uppercase tracking-[0.18em] font-bold">Profile</span>
             </Link>

@@ -1,4 +1,5 @@
 import crypto from "crypto";
+import { sendOtpEmail } from "@/lib/email";
 
 const OTP_TTL_MINUTES = 10;
 const OTP_SECRET = process.env.CUSTOMER_OTP_SECRET || process.env.NEXTAUTH_SECRET || "dev-otp-secret-change-me";
@@ -87,8 +88,10 @@ export function verifyOtpCode(code: string, codeHash: string) {
 }
 
 export async function dispatchOtpEmail(params: { email: string; code: string; purpose: OtpPurpose }) {
-  // TODO: Integrate real email provider here.
-  console.log(`[customer-auth-otp] Send ${params.purpose} OTP to ${params.email}: ${params.code}`);
+  const result = await sendOtpEmail(params.email, params.code);
+  if (!result.success) {
+    throw new Error(result.error || "Unable to send OTP email");
+  }
 }
 
 export function getOtpTtlMinutes() {

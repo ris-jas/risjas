@@ -4,6 +4,7 @@ import { cartService } from "@/services/cart.service";
 import { couponService } from "@/services/coupon.service";
 import { orderRepository } from "@/repositories/order.repository";
 import { generateOrderNumber } from "@/lib/utils";
+import { sendOrderConfirmationEmail, sendOrderStatusUpdateEmail } from "@/lib/email";
 
 export const orderService = {
   async checkout(sessionId: string, payload: any, userId?: string) {
@@ -74,11 +75,30 @@ export const orderService = {
 
     await cartService.clearCart(cart.id);
 
+    if (order.email) {
+      const emailResult = await sendOrderConfirmationEmail(order.email, order.orderNumber, {
+        customerName: order.customerName,
+        items: order.items.map((item) => ({
+          productName: item.productName,
+          quantity: item.quantity,
+          price: Number(item.price),
+          total: Number(item.total)
+        })),
+        total: Number(order.total),
+        paymentMethod: order.paymentMethod
+      });
+      if (!emailResult.success) console.error("[order-confirmation-email]", emailResult.error);
+    }
+
     return order;
   },
 
   trackOrder(orderNumber: string, phone: string) {
     return orderRepository.findByOrderNumber(orderNumber, phone);
+  },
+
+  listByUser(userId: string, email?: string | null) {
+    return orderRepository.listByUser(userId, email);
   },
 
   listAdmin(query?: { search?: string; status?: OrderStatus }) {
@@ -90,7 +110,18 @@ export const orderService = {
   },
 
   updateStatus(id: string, status: OrderStatus) {
-    return orderRepository.updateStatus(id, status);
+    return orderRepository.updateStatus(id, status).then(async (order) => {
+      try {
+        const email = order.email || order.user?.email;
+        if (email) {
+          const emailResult = await sendOrderStatusUpdateEmail(email, order.orderNumber, order.status);
+          if (!emailResult.success) console.error("[order-status-email]", emailResult.error);
+        }
+      } catch (error) {
+        console.error("[order-status-email]", error);
+      }
+      return order;
+    });
   },
 
   updatePaymentStatus(id: string, paymentStatus: PaymentStatus) {

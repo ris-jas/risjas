@@ -16,7 +16,19 @@ export const orderRepository = {
     return prisma.order.findUnique({
       where: { id },
       include: {
-        items: true,
+        items: {
+          include: {
+            product: {
+              select: {
+                images: {
+                  orderBy: { sortOrder: "asc" },
+                  take: 1,
+                  select: { imageUrl: true }
+                }
+              }
+            }
+          }
+        },
         payment: true
       }
     });
@@ -26,6 +38,34 @@ export const orderRepository = {
     return prisma.order.findFirst({
       where: { orderNumber, phone },
       include: { items: true, payment: true }
+    });
+  },
+
+  listByUser(userId: string, email?: string | null) {
+    return prisma.order.findMany({
+      where: {
+        OR: [
+          { userId },
+          ...(email ? [{ email }] : [])
+        ]
+      },
+      orderBy: { createdAt: "desc" },
+      include: {
+        payment: true,
+        items: {
+          include: {
+            product: {
+              select: {
+                images: {
+                  orderBy: { sortOrder: "asc" },
+                  take: 1,
+                  select: { imageUrl: true }
+                }
+              }
+            }
+          }
+        }
+      }
     });
   },
 
@@ -47,7 +87,11 @@ export const orderRepository = {
   },
 
   updateStatus(id: string, status: OrderStatus) {
-    return prisma.order.update({ where: { id }, data: { status } });
+    return prisma.order.update({
+      where: { id },
+      data: { status },
+      include: { user: { select: { email: true } } }
+    });
   },
 
   updatePaymentStatus(id: string, paymentStatus: PaymentStatus) {

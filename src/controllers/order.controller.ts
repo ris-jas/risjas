@@ -29,6 +29,10 @@ export const orderController = {
     }
   },
 
+  listMine(userId: string, email?: string | null) {
+    return orderService.listByUser(userId, email);
+  },
+
   listAdmin(query?: { search?: string; status?: string }) {
     return orderService.listAdmin({
       search: query?.search,

@@ -1,6 +1,8 @@
 import { AlertTriangle, CheckCircle2 } from "lucide-react";
+import Link from "next/link";
 
 import DashboardStats from "@/components/admin/DashboardStats";
+import { ADMIN_PANEL_PATH } from "@/lib/admin-path";
 import { orderService } from "@/services/order.service";
 
 export default async function AdminDashboardPage() {
@@ -31,6 +33,7 @@ export default async function AdminDashboardPage() {
                   <th className="py-3 font-semibold">Date</th>
                   <th className="py-3 font-semibold">Total</th>
                   <th className="py-3 font-semibold">Status</th>
+                  <th className="py-3 font-semibold">Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -46,11 +49,14 @@ export default async function AdminDashboardPage() {
                           {order.status}
                         </span>
                       </td>
+                      <td className="py-4">
+                        <Link href={`${ADMIN_PANEL_PATH}/orders/${order.id}`} className="text-xs font-semibold text-navy underline underline-offset-4 hover:text-red">View order</Link>
+                      </td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={5} className="py-10 text-center text-sm text-slate-500">
+                    <td colSpan={6} className="py-10 text-center text-sm text-slate-500">
                       No recent orders yet.
                     </td>
                   </tr>
