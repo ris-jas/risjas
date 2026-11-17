@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { getSession, signIn } from "next-auth/react";
 
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,17 @@ import { ADMIN_PANEL_PATH } from "@/lib/admin-path";
 export default function AdminLoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [checkingSession, setCheckingSession] = useState(true);
+
+  useEffect(() => {
+    getSession()
+      .then((session) => {
+        if (session?.user?.role === "ADMIN") {
+          window.location.replace(`${ADMIN_PANEL_PATH}/dashboard`);
+        }
+      })
+      .finally(() => setCheckingSession(false));
+  }, []);
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -47,13 +58,13 @@ export default function AdminLoginPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
-      <form onSubmit={onSubmit} className="w-full max-w-sm space-y-3 rounded-2xl border border-slate-200 bg-white p-6 shadow-soft">
+      {checkingSession ? <p className="text-sm text-slate-500">Checking admin session...</p> : <form onSubmit={onSubmit} className="w-full max-w-sm space-y-3 rounded-2xl border border-slate-200 bg-white p-6 shadow-soft">
         <h1 className="text-2xl font-bold">Admin Login</h1>
         <Input name="email" type="email" placeholder="Email" required />
         <Input name="password" type="password" placeholder="Password" required />
         {error ? <p className="text-sm text-red-600">{error}</p> : null}
         <Button type="submit" className="w-full" disabled={loading}>{loading ? "Signing in..." : "Sign In"}</Button>
-      </form>
+      </form>}
     </div>
   );
 }
