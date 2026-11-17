@@ -5,10 +5,13 @@ import { NextRequest } from "next/server";
 import { errorResponse, successResponse } from "@/lib/api-response";
 import { normalizeEmail, normalizePhone, parseAndVerifySession, verifyOtpCode } from "@/lib/customer-auth-otp";
 import { prisma } from "@/lib/prisma";
+import { clientIp, rateLimit, rateLimitResponse } from "@/lib/rate-limit";
 import { customerSignupWithOtpSchema } from "@/lib/validations/customer-credentials.schema";
 
 export async function POST(request: NextRequest) {
   try {
+    const limit = await rateLimit("otp", clientIp(request.headers));
+    if (!limit.success) return rateLimitResponse(limit);
     const payload = customerSignupWithOtpSchema.parse(await request.json());
     const email = normalizeEmail(payload.email);
 

@@ -4,10 +4,13 @@ import { NextRequest } from "next/server";
 import { errorResponse, successResponse } from "@/lib/api-response";
 import { createOtpSession, dispatchOtpEmail, generateOtp, getOtpTtlMinutes, normalizeEmail, normalizePhone } from "@/lib/customer-auth-otp";
 import { prisma } from "@/lib/prisma";
+import { clientIp, rateLimit, rateLimitResponse } from "@/lib/rate-limit";
 import { requestOtpSchema } from "@/lib/validations/customer-auth.schema";
 
 export async function POST(request: NextRequest) {
   try {
+    const limit = await rateLimit("otp", clientIp(request.headers));
+    if (!limit.success) return rateLimitResponse(limit);
     const payload = requestOtpSchema.parse(await request.json());
     const email = normalizeEmail(payload.email);
     const phone = payload.phone ? normalizePhone(payload.phone) : undefined;

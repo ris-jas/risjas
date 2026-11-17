@@ -5,6 +5,7 @@ import { orderController } from "@/controllers/order.controller";
 import { errorResponse, successResponse } from "@/lib/api-response";
 import { CART_COOKIE_KEY } from "@/lib/constants";
 import { getSessionUser } from "@/lib/server-auth";
+import { clientIp, rateLimit, rateLimitResponse } from "@/lib/rate-limit";
 
 function sessionIdFromCookie() {
   const cookieStore = cookies();
@@ -18,6 +19,8 @@ function sessionIdFromCookie() {
 
 export async function POST(request: NextRequest) {
   try {
+    const limit = await rateLimit("checkout", clientIp(request.headers));
+    if (!limit.success) return rateLimitResponse(limit);
     const payload = await request.json();
     const user = await getSessionUser();
     if (!user?.id) {

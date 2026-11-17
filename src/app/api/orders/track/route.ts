@@ -2,9 +2,12 @@
 
 import { orderController } from "@/controllers/order.controller";
 import { errorResponse, successResponse } from "@/lib/api-response";
+import { clientIp, rateLimit, rateLimitResponse } from "@/lib/rate-limit";
 
 export async function POST(request: NextRequest) {
   try {
+    const limit = await rateLimit("tracking", clientIp(request.headers));
+    if (!limit.success) return rateLimitResponse(limit);
     const payload = await request.json();
     const data = await orderController.track(payload);
     if (!data) return errorResponse("Order not found", {}, 404);
