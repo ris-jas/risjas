@@ -82,6 +82,7 @@ export const orderRepository = {
           : undefined
       },
       orderBy: { createdAt: "desc" },
+      take: 500,
       include: { items: true, payment: true }
     });
   },
@@ -155,7 +156,7 @@ export const orderRepository = {
 
   async stats() {
     const [orders, delivered, cancelled, pending, products, lowStockProducts, topOrderItems, recentOrders] = await Promise.all([
-      prisma.order.findMany(),
+      prisma.order.findMany({ select: { total: true, createdAt: true } }),
       prisma.order.count({ where: { status: "DELIVERED" } }),
       prisma.order.count({ where: { status: "CANCELLED" } }),
       prisma.order.count({ where: { status: "PENDING" } }),

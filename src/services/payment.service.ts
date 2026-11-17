@@ -7,9 +7,9 @@ import { getRazorpayClient } from "@/lib/razorpay";
 import { orderRepository } from "@/repositories/order.repository";
 
 export const paymentService = {
-  async createRazorpayOrder(orderId: string) {
-    const order = await prisma.order.findUnique({ where: { id: orderId } });
-    if (!order) throw new Error("Order not found");
+  async createRazorpayOrder(orderId: string, userId: string) {
+    const order = await prisma.order.findFirst({ where: { id: orderId, userId } });
+    if (!order || order.paymentMethod !== "RAZORPAY") throw new Error("Order not found");
 
     const razorpay = getRazorpayClient();
     const razorpayOrder = await razorpay.orders.create({
@@ -36,12 +36,12 @@ export const paymentService = {
     razorpayOrderId: string;
     razorpayPaymentId: string;
     razorpaySignature: string;
-  }) {
+  }, userId: string) {
     const existingOrder = await prisma.order.findUnique({
       where: { id: payload.orderId },
-      select: { id: true, paymentStatus: true, status: true }
+      select: { id: true, userId: true, paymentStatus: true, status: true, payment: { select: { razorpayOrderId: true } } }
     });
-    if (!existingOrder) {
+    if (!existingOrder || existingOrder.userId !== userId || existingOrder.payment?.razorpayOrderId !== payload.razorpayOrderId) {
       throw new Error("Order not found");
     }
 
@@ -54,7 +54,10 @@ export const paymentService = {
       .update(`${payload.razorpayOrderId}|${payload.razorpayPaymentId}`)
       .digest("hex");
 
-    if (generated !== payload.razorpaySignature) {
+    const generatedBuffer = Buffer.from(generated, "hex");
+    const suppliedBuffer = Buffer.from(payload.razorpaySignature, "hex");
+    const signatureMatches = generatedBuffer.length === suppliedBuffer.length && crypto.timingSafeEqual(generatedBuffer, suppliedBuffer);
+    if (!signatureMatches) {
       await prisma.order.update({
         where: { id: payload.orderId },
         data: { paymentStatus: PaymentStatus.FAILED }

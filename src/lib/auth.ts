@@ -5,7 +5,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 
 import { ADMIN_PANEL_PATH } from "@/lib/admin-path";
 import { prisma } from "@/lib/prisma";
-import { clientIp, rateLimit } from "@/lib/rate-limit";
+import { clientIp, clearAuthFailures, rateLimit, recordAuthFailure, waitForAuthBackoff } from "@/lib/rate-limit";
 
 declare module "next-auth" {
   interface Session {
@@ -46,8 +46,12 @@ export const authOptions: NextAuthOptions = {
         }
 
         const loginHeaders = new Headers(request.headers || {});
-        const limit = await rateLimit("login", `${clientIp(loginHeaders)}:${credentials.email.toLowerCase()}`);
-        if (!limit.success) {
+        const ip = clientIp(loginHeaders);
+        const account = credentials.email.trim().toLowerCase();
+        await waitForAuthBackoff(`${ip}:${account}`);
+        const ipLimit = await rateLimit("loginIp", ip);
+        const accountLimit = await rateLimit("loginAccount", account);
+        if (!ipLimit.success || !accountLimit.success) {
           return null;
         }
 
@@ -56,13 +60,17 @@ export const authOptions: NextAuthOptions = {
         });
 
         if (!user || !user.isActive) {
+          recordAuthFailure(`${ip}:${account}`);
           return null;
         }
 
         const matched = await bcrypt.compare(credentials.password, user.password);
         if (!matched) {
+          recordAuthFailure(`${ip}:${account}`);
           return null;
         }
+
+        clearAuthFailures(`${ip}:${account}`);
 
         return {
           id: user.id,

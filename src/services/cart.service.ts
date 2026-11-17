@@ -73,11 +73,15 @@ export const cartService = {
   },
 
   async removeCartItem(sessionId: string, itemId: string) {
-    await cartRepository.removeItem(itemId);
     const cart = await cartRepository.getCartBySession(sessionId);
+    if (!cart?.items.some((item) => item.id === itemId)) {
+      throw new Error("Cart item not found");
+    }
+    await cartRepository.removeItem(itemId);
+    const latest = await cartRepository.getCartBySession(sessionId);
     return {
-      ...cart,
-      summary: cartTotals(cart?.items || [])
+      ...latest,
+      summary: cartTotals(latest?.items || [])
     };
   },
 

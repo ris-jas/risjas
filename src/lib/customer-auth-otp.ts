@@ -1,8 +1,9 @@
 import crypto from "crypto";
 import { sendOtpEmail } from "@/lib/email";
 
-const OTP_TTL_MINUTES = 10;
-const OTP_SECRET = process.env.CUSTOMER_OTP_SECRET || process.env.NEXTAUTH_SECRET || "dev-otp-secret-change-me";
+const OTP_TTL_MINUTES = Number(process.env.CUSTOMER_OTP_TTL_MINUTES || 10);
+const OTP_SECRET = process.env.CUSTOMER_OTP_SECRET || process.env.NEXTAUTH_SECRET;
+if (!OTP_SECRET && process.env.NODE_ENV === "production") throw new Error("OTP secret is not configured");
 
 type OtpPurpose = "LOGIN" | "SIGNUP";
 
@@ -24,11 +25,11 @@ function base64UrlDecode(value: string) {
 }
 
 function signPayload(encodedPayload: string) {
-  return crypto.createHmac("sha256", OTP_SECRET).update(encodedPayload).digest("base64url");
+  return crypto.createHmac("sha256", OTP_SECRET || "invalid-development-secret").update(encodedPayload).digest("base64url");
 }
 
 function hashOtp(code: string) {
-  return crypto.createHash("sha256").update(`${code}:${OTP_SECRET}`).digest("hex");
+  return crypto.createHash("sha256").update(`${code}:${OTP_SECRET || "invalid-development-secret"}`).digest("hex");
 }
 
 export function normalizeEmail(email: string) {

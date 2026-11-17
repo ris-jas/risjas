@@ -3,6 +3,7 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { NextRequest, NextResponse } from "next/server";
 
 import { getR2BucketName, getR2Client } from "@/lib/r2";
+import { requireAdmin } from "@/lib/server-auth";
 
 export const runtime = "nodejs";
 
@@ -20,6 +21,7 @@ type UploadRequestBody = {
 
 export async function POST(request: NextRequest) {
   try {
+    await requireAdmin();
     const { fileName, fileType } = (await request.json()) as UploadRequestBody;
 
     if (!fileName) {
@@ -28,7 +30,7 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-    if (!fileType || !fileType.includes("/")) {
+    if (!fileType || !["image/png", "image/jpeg", "image/webp", "image/gif"].includes(fileType.trim())) {
       return NextResponse.json(
         { success: false, message: "A valid fileType is required" },
         { status: 400 }

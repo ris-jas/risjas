@@ -16,7 +16,7 @@ export async function GET(_request: NextRequest, { params }: RouteContext) {
   try {
     const key = params?.key ? decodeURIComponent(params.key) : "";
 
-    if (!key) {
+    if (!key || !/^[a-zA-Z0-9._-]{1,200}$/.test(key)) {
       return NextResponse.json(
         { success: false, message: "File key is required" },
         { status: 400 }

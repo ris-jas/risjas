@@ -35,6 +35,7 @@ export const productRepository = {
     return prisma.product.findMany({
       where,
       orderBy,
+      take: 100,
       include: {
         category: true,
         images: { orderBy: { sortOrder: "asc" } }
@@ -45,6 +46,7 @@ export const productRepository = {
   async listAdmin() {
     return prisma.product.findMany({
       orderBy: { createdAt: "desc" },
+      take: 500,
       include: {
         category: true,
         images: true

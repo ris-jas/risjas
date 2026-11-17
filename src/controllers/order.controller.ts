@@ -45,10 +45,12 @@ export const orderController = {
   },
 
   updateStatus(id: string, status: string) {
+    if (!Object.values(OrderStatus).includes(status as OrderStatus)) throw new Error("Invalid order status");
     return orderService.updateStatus(id, status as OrderStatus);
   },
 
   updatePaymentStatus(id: string, paymentStatus: string) {
+    if (!Object.values(PaymentStatus).includes(paymentStatus as PaymentStatus)) throw new Error("Invalid payment status");
     return orderService.updatePaymentStatus(id, paymentStatus as PaymentStatus);
   }
 };

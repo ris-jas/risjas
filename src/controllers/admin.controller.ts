@@ -1,12 +1,21 @@
-﻿import { ZodError } from "zod";
+﻿import { z, ZodError } from "zod";
 
 import { prisma } from "@/lib/prisma";
 import { couponSchema, validateCouponSchema } from "@/lib/validations/coupon.schema";
-import { reviewSchema } from "@/lib/validations/review.schema";
-import { contactSchema } from "@/lib/validations/contact.schema";
+import { reviewSchema, reviewUpdateSchema } from "@/lib/validations/review.schema";
+import { contactSchema, contactUpdateSchema } from "@/lib/validations/contact.schema";
 import { couponService } from "@/services/coupon.service";
 import { orderService } from "@/services/order.service";
 import { userRepository } from "@/repositories/user.repository";
+const bannerSchema = z.object({
+  title: z.string().trim().min(1).max(160),
+  subtitle: z.string().trim().max(300).optional().or(z.literal("")),
+  imageUrl: z.string().url(),
+  publicId: z.string().trim().min(1).max(300),
+  buttonText: z.string().trim().max(80).optional().or(z.literal("")),
+  buttonLink: z.string().trim().max(500).optional().or(z.literal("")),
+  isActive: z.boolean().default(true)
+}).strict();
 
 export const adminController = {
   dashboard() {
@@ -59,11 +68,11 @@ export const adminController = {
   },
 
   createBanner(payload: any) {
-    return prisma.banner.create({ data: payload });
+    return prisma.banner.create({ data: bannerSchema.parse(payload) });
   },
 
   updateBanner(id: string, payload: any) {
-    return prisma.banner.update({ where: { id }, data: payload });
+    return prisma.banner.update({ where: { id }, data: bannerSchema.partial().parse(payload) });
   },
 
   deleteBanner(id: string) {
@@ -78,7 +87,7 @@ export const adminController = {
   },
 
   updateReview(id: string, payload: any) {
-    return prisma.review.update({ where: { id }, data: payload });
+    return prisma.review.update({ where: { id }, data: reviewUpdateSchema.parse(payload) });
   },
 
   deleteReview(id: string) {
@@ -90,7 +99,7 @@ export const adminController = {
   },
 
   updateContactQuery(id: string, payload: any) {
-    return prisma.contactQuery.update({ where: { id }, data: payload });
+    return prisma.contactQuery.update({ where: { id }, data: contactUpdateSchema.parse(payload) });
   },
 
   listCustomers() {

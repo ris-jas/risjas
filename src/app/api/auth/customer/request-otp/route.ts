@@ -16,12 +16,8 @@ export async function POST(request: NextRequest) {
     const phone = payload.phone ? normalizePhone(payload.phone) : undefined;
 
     const existing = await prisma.user.findUnique({ where: { email } });
-    if (payload.purpose === "SIGNUP" && existing) {
-      return errorResponse("Email already registered. Please login instead.", {}, 409);
-    }
-    if (payload.purpose === "LOGIN" && (!existing || !existing.isActive || existing.role !== UserRole.CUSTOMER)) {
-      return errorResponse("Account not found. Please sign up first.", {}, 404);
-    }
+    if (payload.purpose === "SIGNUP" && existing) return errorResponse("Unable to send verification code", {}, 400);
+    if (payload.purpose === "LOGIN" && (!existing || !existing.isActive || existing.role !== UserRole.CUSTOMER)) return errorResponse("Unable to send verification code", {}, 400);
 
     const code = generateOtp();
     const otpSession = createOtpSession({
@@ -37,7 +33,6 @@ export async function POST(request: NextRequest) {
     return successResponse("OTP sent to your email", {
       otpSession,
       expiresInMinutes: getOtpTtlMinutes(),
-      ...(process.env.NODE_ENV !== "production" ? { devOtp: code } : {})
     });
   } catch (error: any) {
     return errorResponse(error.message || "Failed to send OTP", {}, 400);
