@@ -10,7 +10,7 @@ import { createPageMetadata, createWebPageSchema } from "@/lib/seo";
 import { categoryService } from "@/services/category.service";
 import { productService } from "@/services/product.service";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 export const metadata: Metadata = createPageMetadata({
   title: "Risjas Online Store | Trendy Gadgets & Lifestyle Picks",
   description:

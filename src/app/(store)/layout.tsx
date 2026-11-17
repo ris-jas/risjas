@@ -7,7 +7,7 @@ import { BRAND_NAME } from "@/lib/constants";
 import { siteUrl } from "@/lib/seo";
 import { categoryService } from "@/services/category.service";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 export default async function StoreLayout({ children }: { children: React.ReactNode }) {
   const categories = await categoryService.listActive();

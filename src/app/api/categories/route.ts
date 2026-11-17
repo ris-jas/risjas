@@ -1,7 +1,7 @@
 ﻿import { categoryController } from "@/controllers/category.controller";
 import { errorResponse, successResponse } from "@/lib/api-response";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 export async function GET() {
   try {

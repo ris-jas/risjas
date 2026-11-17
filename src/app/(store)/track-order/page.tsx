@@ -1,6 +1,7 @@
 "use client";
 
 import { Bike, CalendarDays, Home, MapPin, Package, PackageCheck, Truck } from "lucide-react";
+import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 
 import Reveal from "@/components/common/Reveal";
@@ -94,7 +95,7 @@ export default function TrackOrderPage() {
                   {order.items?.map((item: any) => (
                     <div key={item.id} className="flex gap-4 py-5">
                       <div className="h-20 w-20 shrink-0 overflow-hidden rounded-xl border border-slate-100 bg-slate-50 sm:h-24 sm:w-24">
-                        <img src={item.product?.images?.[0]?.imageUrl || "/products/cute-panda.png"} alt={item.productName} className="h-full w-full object-cover" />
+                        <Image src={item.product?.images?.[0]?.imageUrl || "/products/cute-panda.png"} alt={item.productName} width={96} height={96} sizes="96px" className="h-full w-full object-cover" />
                       </div>
                       <div className="min-w-0 flex-1">
                         <p className="font-semibold text-navy">{item.productName}</p>

@@ -1,4 +1,6 @@
-﻿import { prisma } from "@/lib/prisma";
+﻿import { revalidateTag, unstable_cache } from "next/cache";
+
+import { prisma } from "@/lib/prisma";
 import { ProductFilters } from "@/types";
 
 export const productRepository = {
@@ -32,15 +34,20 @@ export const productRepository = {
           ? { price: "desc" }
           : { createdAt: "desc" };
 
-    return prisma.product.findMany({
-      where,
-      orderBy,
-      take: 100,
-      include: {
-        category: true,
-        images: { orderBy: { sortOrder: "asc" } }
-      }
-    });
+    const cacheKey = JSON.stringify(filters);
+    return unstable_cache(
+      () => prisma.product.findMany({
+        where,
+        orderBy,
+        take: 100,
+        include: {
+          category: true,
+          images: { orderBy: { sortOrder: "asc" } }
+        }
+      }),
+      ["products-public", cacheKey],
+      { revalidate: 60, tags: ["products"] }
+    )();
   },
 
   async listAdmin() {
@@ -55,17 +62,21 @@ export const productRepository = {
   },
 
   async findBySlug(slug: string) {
-    return prisma.product.findUnique({
-      where: { slug },
-      include: {
-        category: true,
-        images: { orderBy: { sortOrder: "asc" } },
-        reviews: {
-          where: { isApproved: true },
-          orderBy: { createdAt: "desc" }
+    return unstable_cache(
+      () => prisma.product.findUnique({
+        where: { slug },
+        include: {
+          category: true,
+          images: { orderBy: { sortOrder: "asc" } },
+          reviews: {
+            where: { isApproved: true },
+            orderBy: { createdAt: "desc" }
+          }
         }
-      }
-    });
+      }),
+      ["product-by-slug", slug],
+      { revalidate: 60, tags: ["products", `product:${slug}`] }
+    )();
   },
 
   async findById(id: string) {
@@ -79,7 +90,7 @@ export const productRepository = {
   },
 
   async create(data: any) {
-    return prisma.product.create({
+    const product = await prisma.product.create({
       data: {
         ...data,
         discountPercent: Math.max(0, Math.round(((Number(data.mrp) - Number(data.price)) / Number(data.mrp)) * 100)),
@@ -89,10 +100,12 @@ export const productRepository = {
       },
       include: { images: true, category: true }
     });
+    revalidateTag("products");
+    return product;
   },
 
   async update(id: string, data: any) {
-    return prisma.product.update({
+    const product = await prisma.product.update({
       where: { id },
       data: {
         ...data,
@@ -106,21 +119,29 @@ export const productRepository = {
       },
       include: { images: true, category: true }
     });
+    revalidateTag("products");
+    return product;
   },
 
   async remove(id: string) {
-    return prisma.product.delete({ where: { id } });
+    const product = await prisma.product.delete({ where: { id } });
+    revalidateTag("products");
+    return product;
   },
 
   async related(categoryId: string, productId: string) {
-    return prisma.product.findMany({
-      where: {
-        categoryId,
-        id: { not: productId },
-        isActive: true
-      },
-      take: 4,
-      include: { images: true }
-    });
+    return unstable_cache(
+      () => prisma.product.findMany({
+        where: {
+          categoryId,
+          id: { not: productId },
+          isActive: true
+        },
+        take: 4,
+        include: { images: true }
+      }),
+      ["products-related", categoryId, productId],
+      { revalidate: 60, tags: ["products"] }
+    )();
   }
 };

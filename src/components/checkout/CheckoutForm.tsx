@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import Script from "next/script";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
@@ -128,7 +129,9 @@ export default function CheckoutForm() {
   });
 
   return (
-    <form className="space-y-7 rounded-[32px] bg-white p-6 shadow-soft sm:p-8" onSubmit={onSubmit}>
+    <>
+      <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
+      <form className="space-y-7 rounded-[32px] bg-white p-6 shadow-soft sm:p-8" onSubmit={onSubmit}>
       <section>
         <h2 className="text-2xl text-navy">Shipping Address</h2>
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
@@ -208,6 +211,7 @@ export default function CheckoutForm() {
         {loading ? "Placing Order..." : "Place Order"}
       </Button>
       <p className="text-center text-xs text-slate-500">Secure checkout powered by Risjas</p>
-    </form>
+      </form>
+    </>
   );
 }

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { ArrowRight, CheckCircle2, KeyRound, LogOut, Mail, ShieldCheck, ShoppingBag, Sparkles, UserRound } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { signIn, signOut } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 
@@ -22,7 +22,7 @@ type AuthUser = {
   role?: string;
 };
 
-export default function ProfilePage() {
+function ProfilePageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -253,5 +253,13 @@ export default function ProfilePage() {
         </Reveal>
       </div>
     </div>
+  );
+}
+
+export default function ProfilePage() {
+  return (
+    <Suspense fallback={<div className="container-page section-space">Loading profile...</div>}>
+      <ProfilePageContent />
+    </Suspense>
   );
 }

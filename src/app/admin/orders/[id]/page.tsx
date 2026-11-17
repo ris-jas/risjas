@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowLeft, MapPin, Package, Phone, ReceiptText } from "lucide-react";
+import Image from "next/image";
 
 import OrderStatusSelect from "@/components/admin/OrderStatusSelect";
 import { ADMIN_PANEL_PATH } from "@/lib/admin-path";
@@ -26,7 +27,7 @@ export default async function AdminOrderDetailPage({ params }: { params: { id: s
           <div className="divide-y divide-slate-100">
             {order.items.map((item) => (
               <div key={item.id} className="flex gap-4 py-5">
-                <div className="h-20 w-20 shrink-0 overflow-hidden rounded-xl border border-slate-100 bg-slate-100"><img src={item.product?.images?.[0]?.imageUrl || "/products/cute-panda.png"} alt={item.productName} className="h-full w-full object-cover" /></div>
+                <div className="h-20 w-20 shrink-0 overflow-hidden rounded-xl border border-slate-100 bg-slate-100"><Image src={item.product?.images?.[0]?.imageUrl || "/products/cute-panda.png"} alt={item.productName} width={80} height={80} sizes="80px" className="h-full w-full object-cover" /></div>
                 <div className="min-w-0 flex-1"><p className="font-semibold text-navy">{item.productName}</p><p className="mt-1 text-sm text-slate-500">SKU: {item.productSku}</p><p className="mt-2 text-sm text-slate-600">Rs. {Number(item.price).toFixed(0)} × {item.quantity}</p></div>
                 <p className="font-bold text-navy">Rs. {Number(item.total).toFixed(0)}</p>
               </div>

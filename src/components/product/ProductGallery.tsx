@@ -17,14 +17,14 @@ export default function ProductGallery({ images, name }: { images: { imageUrl: s
             onClick={() => setActive(image.imageUrl)}
             className={`relative aspect-square overflow-hidden rounded-2xl bg-slate-50/70 p-1.5 transition ${active === image.imageUrl ? "shadow-[0_0_0_2px_rgba(232,183,200,0.7)]" : "hover:shadow-[0_0_0_2px_rgba(13,22,51,0.2)]"}`}
           >
-            <Image src={image.imageUrl} alt={name} fill className="rounded-xl object-cover" />
+            <Image src={image.imageUrl} alt={name} fill sizes="82px" className="rounded-xl object-cover" />
           </button>
         ))}
       </div>
 
       <div className="order-1 relative aspect-square overflow-hidden rounded-[34px] bg-slate-50/70 p-3 sm:order-2">
         <div className="relative h-full w-full overflow-hidden rounded-[28px]">
-          <Image src={active} alt={name} fill className="object-cover" />
+          <Image src={active} alt={name} fill sizes="(max-width: 1024px) 100vw, 55vw" className="object-cover" />
         </div>
         <div className="pointer-events-none absolute inset-0 rounded-[34px] bg-gradient-to-t from-navy/8 to-transparent" />
       </div>

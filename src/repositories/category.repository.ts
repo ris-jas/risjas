@@ -1,11 +1,19 @@
-﻿import { prisma } from "@/lib/prisma";
+﻿import { unstable_cache, revalidateTag } from "next/cache";
+
+import { prisma } from "@/lib/prisma";
+
+const getCachedActiveCategories = unstable_cache(
+  () => prisma.category.findMany({
+    where: { isActive: true },
+    orderBy: { name: "asc" }
+  }),
+  ["categories-active"],
+  { revalidate: 300, tags: ["categories"] }
+);
 
 export const categoryRepository = {
   listActive() {
-    return prisma.category.findMany({
-      where: { isActive: true },
-      orderBy: { name: "asc" }
-    });
+    return getCachedActiveCategories();
   },
   listAdmin() {
     return prisma.category.findMany({
@@ -15,13 +23,19 @@ export const categoryRepository = {
   findById(id: string) {
     return prisma.category.findUnique({ where: { id } });
   },
-  create(data: any) {
-    return prisma.category.create({ data });
+  async create(data: any) {
+    const category = await prisma.category.create({ data });
+    revalidateTag("categories");
+    return category;
   },
-  update(id: string, data: any) {
-    return prisma.category.update({ where: { id }, data });
+  async update(id: string, data: any) {
+    const category = await prisma.category.update({ where: { id }, data });
+    revalidateTag("categories");
+    return category;
   },
-  remove(id: string) {
-    return prisma.category.delete({ where: { id } });
+  async remove(id: string) {
+    const category = await prisma.category.delete({ where: { id } });
+    revalidateTag("categories");
+    return category;
   }
 };

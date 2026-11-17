@@ -63,19 +63,6 @@ export default function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
     return () => clearInterval(timer);
   }, [allSlides.length]);
 
-  useEffect(() => {
-    const timers = allSlides.map((slide, slideIndex) =>
-      window.setTimeout(() => {
-        const image = new window.Image();
-        image.src = slide.image;
-      }, slideIndex * 350)
-    );
-
-    return () => {
-      timers.forEach((timer) => window.clearTimeout(timer));
-    };
-  }, [allSlides]);
-
   const nextSlide = () => setIndex((prev) => (prev + 1) % allSlides.length);
   const prevSlide = () => setIndex((prev) => (prev - 1 + allSlides.length) % allSlides.length);
   const active = allSlides[index];
@@ -101,8 +88,7 @@ export default function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
                     fill
                     priority={index === 0}
                     sizes="100vw"
-                    quality={82}
-                    unoptimized
+                    quality={72}
                     className="object-cover object-[62%_35%]"
                   />
                 </div>

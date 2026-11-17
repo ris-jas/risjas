@@ -1,23 +1,23 @@
 import type { Metadata } from "next";
 import { Inter, Outfit } from "next/font/google";
 import type { Viewport } from "next";
-import Script from "next/script";
 
 import "./globals.css";
 import "./fallback.css";
 
 import { BRAND_NAME, BRAND_TAGLINE } from "@/lib/constants";
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://risjas.com";
+
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const outfit = Outfit({ subsets: ["latin"], variable: "--font-sans" });
-
-export const dynamic = "force-dynamic";
 
 export const viewport: Viewport = {
   themeColor: "#0d1633",
 };
 
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: {
     default: `${BRAND_NAME} - ${BRAND_TAGLINE}`,
     template: `%s | ${BRAND_NAME}`
@@ -77,10 +77,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body className={`site-body ${inter.variable} ${outfit.variable}`}>
         {children}
-        <Script
-          src="https://checkout.razorpay.com/v1/checkout.js"
-          strategy="lazyOnload"
-        />
       </body>
     </html>
   );
