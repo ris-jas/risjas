@@ -15,6 +15,12 @@ export async function middleware(request: NextRequest) {
   const isSecureAdminRoot = pathname === ADMIN_PANEL_PATH;
   const isLegacyAdminRoot = pathname === "/admin";
   const requiresAdminToken = isLegacyAdminApi || isSecureAdminApi || isSecureAdminSubPage;
+  const getAdminToken = () =>
+    getToken({
+      req: request,
+      secret: process.env.NEXTAUTH_SECRET,
+      secureCookie: request.nextUrl.protocol === "https:"
+    });
 
   if (isOldSecurePath) {
     const rewriteUrl = request.nextUrl.clone();
@@ -27,14 +33,14 @@ export async function middleware(request: NextRequest) {
   }
 
   if (isSecureAdminRoot || isLegacyAdminRoot) {
-    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+    const token = await getAdminToken();
     if (token?.role === "ADMIN") {
       return NextResponse.redirect(new URL(`${ADMIN_PANEL_PATH}/dashboard`, request.url));
     }
   }
 
   if (requiresAdminToken) {
-    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+    const token = await getAdminToken();
     if (!token || token.role !== "ADMIN") {
       if (isLegacyAdminApi || isSecureAdminApi) {
         return NextResponse.json({ success: false, message: "Unauthorized", errors: {} }, { status: 401 });
